@@ -45,12 +45,16 @@ public class SecurityConfig {
                         // Allow auth endpoints | 認証エンドポイントを許可する
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // Allow error endpoint | エラーエンドポイントを許可する
+                        .requestMatchers("/error").permitAll()
+
                         // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll()
 
                         // Require authentication for all other requests | その他のすべてのリクエストには認証が必要
                         .anyRequest().authenticated()
                 )
+
 
                 // Set session management to stateless | セッション管理をステートレスに設定する
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

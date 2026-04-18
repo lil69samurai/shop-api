@@ -26,3 +26,10 @@ server:
 jwt:
   secret: ThisIsAVerySecureSecretKeyForEcommerceShopApi2024!!
   expiration: 86400000
+
+logging:
+  level:
+    com.ecommerce.shop_api: DEBUG
+    com.ecommerce.shop_api.security: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
