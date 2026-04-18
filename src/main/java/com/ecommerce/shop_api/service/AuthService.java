@@ -87,4 +87,41 @@ public class AuthService {
                 .role(user.getRole().name())
                 .build();
     }
+    // Register admin user | 管理者ユーザーを登録する
+    public AuthResponse registerAdmin(RegisterRequest request) {
+
+        // Check if username already exists | ユーザー名が既に存在するか確認する
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new DuplicateResourceException(
+                    "Username already in use | このユーザー名は既に使用されています: " + request.getUsername()
+            );
+        }
+
+        // Check if email already exists | メールアドレスが既に存在するか確認する
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException(
+                    "Email already in use | このメールアドレスは既に使用されています: " + request.getEmail()
+            );
+        }
+
+        // Build admin user | 管理者ユーザーを作成する
+        User user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ROLE_ADMIN) // Admin role | 管理者ロール
+                .build();
+
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(user);
+
+        return AuthResponse.builder()
+                .token(token)
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+    }
 }

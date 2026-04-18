@@ -51,6 +51,14 @@ public class SecurityConfig {
                         // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
                         .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll()
 
+                        // Only ADMIN can create/update/delete products and categories
+                        // 管理者のみ商品とカテゴリの作成・更新・削除が可能
+                        .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
+
+                        // Authenticated users can manage their own orders | 認証済みユーザーは注文を管理できる
+                        .requestMatchers("/api/orders/**").authenticated()
                         // Require authentication for all other requests | その他のすべてのリクエストには認証が必要
                         .anyRequest().authenticated()
                 )
