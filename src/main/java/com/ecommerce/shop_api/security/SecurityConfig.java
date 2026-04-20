@@ -1,5 +1,6 @@
 package com.ecommerce.shop_api.security;
 
+import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,35 +24,35 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import org.springframework.security.config.Customizer;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthFilter;
-    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomUserDetailsService customUserDetailsService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Disable CSRF because we use JWT | JWTを使用するためCSRFを無効にする
-                .csrf(AbstractHttpConfigurer::disable)
-
-                // Enable CORS | CORSを有効にする
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                // Configure endpoint permissions | エンドポイントの権限を設定する
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Allow auth endpoints | 認証エンドポイントを許可する
-                        .requestMatchers("/api/auth/**").permitAll()
-
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register-admin").permitAll()
                         // Allow error endpoint | エラーエンドポイントを許可する
                         .requestMatchers("/error").permitAll()
 
-                        // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**", "/api/products/**").permitAll()
 
-                        // Only ADMIN can create/update/delete products and categories
+                        // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()// Only ADMIN can create/update/delete products and categories
                         // 管理者のみ商品とカテゴリの作成・更新・削除が可能
                         .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
@@ -62,22 +63,15 @@ public class SecurityConfig {
                         // Require authentication for all other requests | その他のすべてのリクエストには認証が必要
                         .anyRequest().authenticated()
                 )
-
-
-                // Set session management to stateless | セッション管理をステートレスに設定する
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Add authentication provider | 認証プロバイダーを追加する
                 .authenticationProvider(authenticationProvider())
-
-                // Add JWT filter before UsernamePasswordAuthenticationFilter | JWTフィルターを追加する
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(customUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

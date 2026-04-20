@@ -4,18 +4,28 @@ import com.ecommerce.shop_api.dto.request.LoginRequest;
 import com.ecommerce.shop_api.dto.request.RegisterRequest;
 import com.ecommerce.shop_api.dto.response.ApiResponse;
 import com.ecommerce.shop_api.dto.response.AuthResponse;
+import com.ecommerce.shop_api.dto.response.UserResponse;
+import com.ecommerce.shop_api.entity.User;
+import com.ecommerce.shop_api.exception.ResourceNotFoundException;
+import com.ecommerce.shop_api.repository.UserRepository;
 import com.ecommerce.shop_api.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
+
+
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
+    private final UserRepository userRepository;
 
     // POST: Register new user | 新しいユーザーを登録する
     @PostMapping("/register")
@@ -41,5 +51,21 @@ public class AuthController {
         AuthResponse response = authService.registerAdmin(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Admin registration successful | 管理者登録が完了しました", response));
+    }
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success("取得使用者資訊成功", response));
     }
 }
