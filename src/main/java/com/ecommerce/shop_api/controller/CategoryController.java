@@ -23,13 +23,38 @@ public class CategoryController {
             @Valid @RequestBody CategoryRequest request) {
         CategoryResponse response = categoryService.createCategory(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("分類建立成功", response));
+                .body(ApiResponse.success("Category Build Success.", response));
     }
 
     // GET: Get all Category
     @GetMapping
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
         List<CategoryResponse> responses = categoryService.getAllCategories();
-        return ResponseEntity.ok(ApiResponse.success("查詢成功", responses));
+        return ResponseEntity.ok(ApiResponse.success("Successfully Searched", responses));
+    }
+
+    // GET: Get Category by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CategoryResponse>> getCategoryById(
+            @PathVariable Long id) {
+        CategoryResponse response = categoryService.getCategoryById(id);
+        return ResponseEntity.ok(ApiResponse.success("Successfully Searched.", response));
+    }
+
+    // PUT: Update Category
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<CategoryResponse>> updateCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody CategoryRequest request) {
+        CategoryResponse response = categoryService.updateCategory(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Category Successfully Added.", response));
+    }
+
+    // DELETE: Delete Category
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteCategory(
+            @PathVariable Long id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.ok(ApiResponse.success("Category Successfully Deleted.", null));
     }
 }

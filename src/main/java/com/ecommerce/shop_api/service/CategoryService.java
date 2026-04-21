@@ -3,6 +3,7 @@ package com.ecommerce.shop_api.service;
 import com.ecommerce.shop_api.dto.request.CategoryRequest;
 import com.ecommerce.shop_api.dto.response.CategoryResponse;
 import com.ecommerce.shop_api.entity.Category;
+import com.ecommerce.shop_api.exception.ResourceNotFoundException;
 import com.ecommerce.shop_api.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+
     // Build Category.
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
@@ -41,7 +43,40 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    //
+    // Get Category by ID
+    @Transactional(readOnly = true)
+    public CategoryResponse getCategoryById(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+        return mapToResponse(category);
+
+    }
+    // Update Category
+    @Transactional
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+
+        // Check if new name already exists (but not this category)
+        if (!category.getName().equals(request.getName())
+                && categoryRepository.existsByName(request.getName())) {
+            throw new RuntimeException("Category name already exist");
+        }
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+
+        Category saved = categoryRepository.save(category);
+        return mapToResponse(saved);
+    }
+    // Delete Category
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
+        categoryRepository.delete(category);
+    }
+
+        //
     private CategoryResponse mapToResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())

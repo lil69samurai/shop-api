@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { getCategoriesApi, createCategoryApi } from "../api/categoryApi";
+import { getCategoriesApi, createCategoryApi, updateCategoryApi, deleteCategoryApi, } from "../api/categoryApi";
 
 const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+    const [editingCategory, setEditingCategory] = useState(null);
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", description: "" });
 
@@ -23,17 +24,47 @@ const AdminCategoriesPage = () => {
     fetchCategories();
   }, []);
 
+  const resetForm = () => {
+    setForm({ name: "", description: "" });
+    setEditingCategory(null);
+    setShowForm(false);
+    setError("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      await createCategoryApi(form);
-      setForm({ name: "", description: "" });
-      setShowForm(false);
-      fetchCategories();
+      if (editingCategory) {
+              await updateCategoryApi(editingCategory.id, form);
+            } else {
+              await createCategoryApi(form);
+            }
+            resetForm();
     } catch (err) {
       setError("Failed to create category");
+      console.error(err);
+    }
+  };
+
+  const handleEdit = (category) => {
+    setForm({
+      name: category.name,
+      description: category.description || "",
+    });
+    setEditingCategory(category);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
+
+    try {
+      await deleteCategoryApi(id);
+      fetchCategories();
+    } catch (err) {
+      setError("Failed to delete category. It may have products assigned.");
       console.error(err);
     }
   };
@@ -54,57 +85,79 @@ const AdminCategoriesPage = () => {
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="border rounded p-4 mb-6 space-y-4">
-          {error && (
-            <div className="bg-red-100 text-red-700 p-3 rounded">{error}</div>
-          )}
-          <div>
-            <label className="block mb-1 font-medium">Name</label>
-            <input
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full border p-2 rounded"
-              required
-            />
-          </div>
-          <div>
-            <label className="block mb-1 font-medium">Description</label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full border p-2 rounded"
-              rows="2"
-            />
-          </div>
-          <button className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
-            Create
-          </button>
-        </form>
-      )}
+      {error && (
+              <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                {error}
+              </div>
+            )}
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2 text-left">ID</th>
-              <th className="border p-2 text-left">Name</th>
-              <th className="border p-2 text-left">Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <tr key={cat.id} className="hover:bg-gray-50">
-                <td className="border p-2">{cat.id}</td>
-                <td className="border p-2">{cat.name}</td>
-                <td className="border p-2">{cat.description}</td>
-              </tr>
-            ))}
+      {showForm && (
+              <form onSubmit={handleSubmit} className="border rounded p-4 mb-6 space-y-4">
+                <h2 className="font-bold text-lg">
+                  {editingCategory ? "Edit Category" : "New Category"}
+                </h2>
+                <div>
+                  <label className="block mb-1 font-medium">Name</label>
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full border p-2 rounded"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 font-medium">Description</label>
+                  <textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full border p-2 rounded"
+                    rows="2"
+                  />
+                </div>
+                <button className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                  {editingCategory ? "Update" : "Create"}
+                </button>
+              </form>
+            )}
+
+      {categories.length === 0 ? (
+              <p className="text-gray-500">No categories found.</p>
+            ) : (
+              <table className="w-full border-collapse border">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border p-2 text-left">ID</th>
+                    <th className="border p-2 text-left">Name</th>
+                    <th className="border p-2 text-left">Description</th>
+                    <th className="border p-2 text-left">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((cat) => (
+                    <tr key={cat.id} className="hover:bg-gray-50">
+                      <td className="border p-2">{cat.id}</td>
+                      <td className="border p-2">{cat.name}</td>
+                      <td className="border p-2">{cat.description}</td>
+                      <td className="border p-2">
+                        <button
+                          onClick={() => handleEdit(cat)}
+                          className="text-blue-500 hover:underline mr-3"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(cat.id)}
+                          className="text-red-500 hover:underline"
+                        >
+                    Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
-      </div>
+      )}
     </div>
   );
 };
-
 export default AdminCategoriesPage;
