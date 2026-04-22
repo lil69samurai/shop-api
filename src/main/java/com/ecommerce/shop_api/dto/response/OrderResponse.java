@@ -11,7 +11,9 @@ import java.util.List;
 @Builder
 public class OrderResponse {
     private Long id;
+    private Long userId;
     private String status;
+    private String username;
     private BigDecimal totalAmount;
     private List<OrderItemResponse> items;
     private LocalDateTime createdAt;

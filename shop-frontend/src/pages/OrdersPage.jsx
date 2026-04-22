@@ -1,81 +1,76 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getMyOrdersApi } from "../api/orderApi";
-
+import { getMyOrdersApi, deleteOrderApi } from "../api/orderApi";
 
 const OrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-          try {
-            const data = await getMyOrdersApi();
-            const orderList = data.data?.content || data.data || [];
-            setOrders(Array.isArray(orderList) ? orderList : []);
-          } catch (error) {
+
+    const fetchOrders = async () => {
+       try {
+         const data = await getMyOrdersApi();
+         const orderList = data.data?.content || data.data || [];
+          setOrders(Array.isArray(orderList) ? orderList : []);
+         } catch (error) {
             console.error("Failed to fetch orders", error);
           } finally {
             setLoading(false);
           }
         };
-    fetchOrders();
+
+        useEffect(() => {
+           fetchOrders();
       }, []);
 
-    if (loading) {
-      return <div className="text-center mt-10 text-gray-500">Loading...</div>;
-    }
+    const handleDelete = async (id) => {
+        if (!window.confirm("Cancel this order?")) return;
+        setError("");
+        try {
+          await deleteOrderApi(id);
+          fetchOrders();
+        } catch (err) {
+          setError(err.response?.data?.message || "Failed to cancel order. Only PENDING orders can be cancelled.");
+        }
+      };
+
+      if (loading) return <div>Loading...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-           <div className="flex justify-between items-center mb-6">
-             <h1 className="text-2xl font-bold">My Orders</h1>
-             <Link
-               to="/orders/create"
-               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-             >
-               + New Order
-             </Link>
-           </div>
+    <div style={{maxWidth: "800px", margin: "0 auto", padding: "24px"}}>
+          <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px"}}>
+            <h1 style={{fontSize: "24px", fontWeight: "bold"}}>My Orders</h1>
+            <Link to="/orders/create" style={{background: "#3b82f6", color: "white", padding: "8px 16px", borderRadius: "4px", textDecoration: "none"}}>+ New Order</Link>
+          </div>
 
-           {orders.length === 0 ? (
-             <p className="text-gray-500">No orders yet.</p>
-           ) : (
-             <div className="space-y-4">
-               {orders.map((order) => (
-                 <Link
-                   to={`/orders/${order.id}`}
-                   key={order.id}
-                   className="block border rounded p-4 hover:shadow-lg transition"
-                 >
-                   <div className="flex justify-between items-center">
-                     <div>
-                       <p className="font-bold">Order #{order.id}</p>
-                       <p className="text-sm text-gray-500">
-                         {new Date(order.createdAt).toLocaleDateString()}
-                       </p>
-                     </div>
-                     <div className="text-right">
-                       <p className="text-green-600 font-semibold">
-                         ${order.totalAmount}
-                       </p>
-                       <span className={`text-sm px-2 py-1 rounded ${
-                         order.status === "PAID" ? "bg-green-100 text-green-700" :
-                         order.status === "PENDING" ? "bg-yellow-100 text-yellow-700" :
-                         order.status === "SHIPPED" ? "bg-blue-100 text-blue-700" :
-                         order.status === "DELIVERED" ? "bg-purple-100 text-purple-700" :
-                         order.status === "CANCELLED" ? "bg-red-100 text-red-700" :
-                         "bg-gray-100 text-gray-700"
-                       }`}>
-                         {order.status}
-                       </span>
-                     </div>
-                   </div>
-                 </Link>
-               ))}
-             </div>
-           )}
-         </div>
+          {error && <div style={{background: "#fee2e2", color: "#dc2626", padding: "12px", borderRadius: "4px", marginBottom: "16px"}}>{error}</div>}
+{orders.length === 0 ? (
+        <p style={{color: "#6b7280"}}>No orders yet.</p>
+      ) : (
+        <div>
+          {orders.map((order) => (
+            <div key={order.id} style={{border: "1px solid #ddd", borderRadius: "4px", padding: "16px", marginBottom: "12px"}}>
+              <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+                <Link to={"/orders/" + order.id} style={{textDecoration: "none", color: "inherit"}}>
+                  <p style={{fontWeight: "bold"}}>Order #{order.id}</p>
+                  <p style={{fontSize: "14px", color: "#6b7280"}}>{new Date(order.createdAt).toLocaleDateString()}</p>
+                </Link>
+                <div style={{display: "flex", alignItems: "center", gap: "12px"}}>
+                  <div style={{textAlign: "right"}}>
+                    <p style={{color: "#16a34a", fontWeight: "bold"}}>${order.totalAmount}</p>
+                    <span style={{fontSize: "14px"}}>{order.status}</span>
+                  </div>
+                  {order.status === "PENDING" && (
+                    <button onClick={() => handleDelete(order.id)} style={{background: "#ef4444", color: "white", padding: "4px 12px", borderRadius: "4px", border: "none", cursor: "pointer"}}>Cancel</button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

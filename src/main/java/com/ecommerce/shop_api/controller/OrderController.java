@@ -25,17 +25,17 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    // POST: Create order | 注文を作成する
+    // POST: Create order
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @Valid @RequestBody OrderRequest request,
             @AuthenticationPrincipal User currentUser) {
         OrderResponse response = orderService.createOrder(request, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Order created successfully | 注文が正常に作成されました", response));
+                .body(ApiResponse.success("Order created successfully", response));
     }
 
-    // GET: Get my orders | 自分の注文を取得する
+    // GET: Get my orders (for logged in user)
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMyOrders(
             @AuthenticationPrincipal User currentUser,
@@ -43,24 +43,45 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<OrderResponse> orders = orderService.getMyOrders(currentUser, pageable);
-        return ResponseEntity.ok(ApiResponse.success("Orders retrieved successfully | 注文を取得しました", orders));
+        return ResponseEntity.ok(ApiResponse.success("Orders retrieved successfully", orders));
     }
 
-    // GET: Get single order | 注文を1件取得する
+    // GET: Get ALL orders (Admin only)
+    @GetMapping("/all")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<Page<OrderResponse>>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<OrderResponse> orders = orderService.getAllOrders(pageable);
+        return ResponseEntity.ok(ApiResponse.success("All orders retrieved successfully", orders));
+    }
+
+    // GET: Get single order
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
             @PathVariable Long id,
             @AuthenticationPrincipal User currentUser) {
         OrderResponse response = orderService.getOrderById(id, currentUser);
-        return ResponseEntity.ok(ApiResponse.success("Order retrieved successfully | 注文を取得しました", response));
+        return ResponseEntity.ok(ApiResponse.success("Order retrieved successfully", response));
     }
-    // PATCH: Update order status (Admin only) | 注文ステータスを更新する（管理者のみ）
+
+    // DELETE: Cancel order (User can cancel own PENDING order)
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User currentUser) {
+        orderService.deleteOrder(id, currentUser);
+        return ResponseEntity.ok(ApiResponse.success("Order cancelled successfully", null));
+    }
+
+    // PATCH: Update order status (Admin only)
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(
             @PathVariable Long id,
             @RequestParam OrderStatus status) {
         OrderResponse response = orderService.updateOrderStatus(id, status);
-        return ResponseEntity.ok(ApiResponse.success("Order status updated | 注文ステータスが更新されました", response));
+        return ResponseEntity.ok(ApiResponse.success("Order status updated", response));
     }
 }

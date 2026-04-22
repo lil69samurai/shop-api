@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMyOrdersApi } from "../api/orderApi";
+import { getAllOrdersApi } from "../api/orderApi";
 import api from "../api/axios";
 
 const AdminOrdersPage = () => {
@@ -8,7 +8,7 @@ const AdminOrdersPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const data = await getMyOrdersApi();
+      const data = await getAllOrdersApi();
       const orderList = data.data?.content || data.data || [];
       setOrders(Array.isArray(orderList) ? orderList : []);
     } catch (err) {
@@ -24,7 +24,7 @@ const AdminOrdersPage = () => {
 
   const updateStatus = async (orderId, newStatus) => {
     try {
-      await api.patch(`/api/orders/${orderId}/status`, { status: newStatus });
+      await api.patch(`/api/orders/${orderId}/status?status=${newStatus}`);
       fetchOrders();
     } catch (err) {
       console.error("Failed to update status", err);

@@ -94,6 +94,13 @@ public class OrderService {
         return mapToResponse(saved);
     }
 
+    // Get ALL orders (Admin only)
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
     // Get all orders for current user | 現在のユーザーの全注文を取得する
     @Transactional(readOnly = true)
     public Page<OrderResponse> getMyOrders(User currentUser, Pageable pageable) {
@@ -118,6 +125,37 @@ public class OrderService {
         }
 
         return mapToResponse(order);
+    }
+
+    // Delete/Cancel order (User can only cancel PENDING orders)
+    @Transactional
+    public void deleteOrder(Long id, User currentUser) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found: ID " + id
+                ));
+
+        // Check if the order belongs to current user
+        if (!order.getUser().getId().equals(currentUser.getId())) {
+            throw new ResourceNotFoundException("Order not found: ID " + id);
+        }
+
+        // Only PENDING orders can be cancelled
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException(
+                    "Cannot cancel order. Only PENDING orders can be cancelled. Current status: " + order.getStatus()
+            );
+        }
+
+        // Restore stock
+        for (OrderItem item : order.getItems()) {
+            Product product = item.getProduct();
+            product.setStock(product.getStock() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        // Delete the order
+        orderRepository.delete(order);
     }
 
     // Update order status (Admin only) | 注文ステータスを更新する（管理者のみ）
@@ -153,6 +191,8 @@ public class OrderService {
 
         return OrderResponse.builder()
                 .id(order.getId())
+                .userId(order.getUser().getId())
+                .username(order.getUser().getUsername())
                 .status(order.getStatus().name())
                 .totalAmount(order.getTotalAmount())
                 .items(itemResponses)
