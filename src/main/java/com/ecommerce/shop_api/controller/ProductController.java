@@ -44,7 +44,7 @@ public class ProductController {
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<ProductResponse> responses = productService.getAllProducts(pageable);
+        Page<ProductResponse> responses = productService.searchProducts(keyword, categoryId, pageable);
         return ResponseEntity.ok(ApiResponse.success("Search successful", responses));
     }
 

@@ -15,10 +15,10 @@ const ProductsPage = () => {
   const [totalElements, setTotalElements] = useState(0);
   const pageSize = 6;
 
-  const fetchProducts = async (page = 0) => {
+  const fetchProducts = async (page = 0, keyword = searchKeyword, categoryId = selectedCategory) => {
     setLoading(true);
     try {
-      const productsData = await getProductsApi(page, pageSize, searchKeyword, selectedCategory);
+      const productsData = await getProductsApi(page, pageSize, keyword, categoryId);
       const pageData = productsData.data;
       setProducts(pageData.content || []);
       setTotalPages(pageData.totalPages || 0);
@@ -42,38 +42,50 @@ const ProductsPage = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchProducts(0);
   }, []);
 
-  useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
-
+  // 點 Search 按鈕
   const handleSearch = () => {
     setCurrentPage(0);
-    fetchProducts(0);
+    fetchProducts(0, searchKeyword, selectedCategory);
   };
 
+  // 選擇分類後立即搜尋
+  const handleCategoryChange = (e) => {
+    const newCategory = e.target.value;
+    setSelectedCategory(newCategory);
+    setCurrentPage(0);
+    fetchProducts(0, searchKeyword, newCategory);
+  };
+
+  // 清除所有篩選
   const handleClearFilters = () => {
     setSearchKeyword("");
     setSelectedCategory("");
     setCurrentPage(0);
-    setTimeout(() => {
-      fetchProducts(0);
-    }, 0);
+    fetchProducts(0, "", "");
   };
 
+  // 按 Enter 搜尋
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
 
+  // 換頁時用目前的搜尋條件
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    fetchProducts(page, searchKeyword, selectedCategory);
+  };
+
   const handlePreviousPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
+    if (currentPage > 0) handlePageChange(currentPage - 1);
   };
 
   const handleNextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages - 1) handlePageChange(currentPage + 1);
   };
 
   const getPageNumbers = () => {
@@ -110,7 +122,7 @@ const ProductsPage = () => {
           <div className="w-full md:w-64">
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={handleCategoryChange}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Categories</option>
@@ -179,7 +191,9 @@ const ProductsPage = () => {
               </div>
               <p className="text-gray-600 mt-1 text-sm">{product.description}</p>
               <p className="text-green-600 font-semibold mt-2 text-lg">${product.price}</p>
-              <p className="text-sm text-gray-400 mt-1">Stock: {product.stockQuantity}</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Stock: {product.stock ?? product.stockQuantity ?? "N/A"}
+              </p>
             </Link>
           ))}
         </div>
@@ -198,7 +212,7 @@ const ProductsPage = () => {
           {getPageNumbers().map((page) => (
             <button
               key={page}
-              onClick={() => setCurrentPage(page)}
+              onClick={() => handlePageChange(page)}
               className={`px-4 py-2 border rounded-lg transition ${
                 currentPage === page
                   ? "bg-blue-600 text-white border-blue-600"
