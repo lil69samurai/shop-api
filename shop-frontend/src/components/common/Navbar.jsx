@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../context/CartContext";
+import { toast } from 'react-toastify';
+
 
 const Navbar = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const { cartItemCount } = useCart();
-
+  const handleLogout = () => {
+    logout();
+    toast.info("Logged out successfully!");
+  };
   return (
     <nav className="bg-gray-800 text-white p-4">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -44,7 +49,7 @@ const Navbar = () => {
               </span>
 
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="bg-red-500 px-3 py-1 rounded hover:bg-red-600"
               >
                 Logout

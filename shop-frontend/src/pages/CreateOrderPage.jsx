@@ -12,13 +12,12 @@ const CreateOrderPage = () => {
 // Send order
   const handleSubmit = async () => {
     if (cartItems.length === 0) {
-      setError("Can not build order if the cart is empty！");
+      setError("Cart is empty!");
       return;
     }
 
     setError("");
     setSubmitting(true);
-
     try {
       const orderData = {
         items: cartItems.map((item) => ({
@@ -26,13 +25,10 @@ const CreateOrderPage = () => {
           quantity: item.quantity,
         })),
       };
-
       await createOrderApi(orderData);
-
       // Empty the cart after order is built.
       clearCart();
-
-      alert("Order created successfully！🎉");
+      toast.success("Order created successfully!");
       navigate("/orders");
     } catch (err) {
       setError("Order created failed, please try again later。");
@@ -48,37 +44,24 @@ const CreateOrderPage = () => {
       <div className="max-w-2xl mx-auto mt-20 text-center p-6 bg-gray-50 rounded-lg shadow">
         <h2 className="text-2xl font-bold text-gray-700 mb-4">Cart is empty</h2>
         <p className="text-gray-500 mb-6">Please select your items first before checking out.！</p>
-        <Link
-          to="/products"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Go shopping
-        </Link>
+        <Link to="/products" className="text-blue-600 underline">Go shopping</Link>
       </div>
     );
   }
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6">
-      <h1 className="text-3xl font-bold mb-6 border-b pb-4">Comfirm the order</h1>
-
+      <h1 className="text-3xl font-bold mb-6 border-b pb-4">Comfirm order</h1>
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-          {error}
-        </div>
+        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
       )}
-
       {/* Order details */}
       <div className="space-y-4">
         {cartItems.map((item) => (
-          <div
-            key={item.id}
-            className="flex justify-between items-center border p-4 rounded bg-white shadow-sm"
-          >
+          <div key={item.id} className="flex justify-between items-center border p-4 rounded bg-white shadow-sm">
             <div>
               <h3 className="text-lg font-semibold">{item.name}</h3>
-              <p className="text-gray-500">
-                Single price: ${item.price} × {item.quantity}
+              <p className="text-gray-500"> Single price: ${item.price} × {item.quantity}
               </p>
             </div>
             <p className="text-lg font-bold text-green-600">
@@ -99,15 +82,12 @@ const CreateOrderPage = () => {
         <div className="flex gap-4">
           <Link
             to="/cart"
-            className="flex-1 text-center bg-gray-300 text-gray-800 py-3 rounded-lg text-lg font-bold hover:bg-gray-400 transition"
-          >
+            className="flex-1 text-center bg-gray-300 text-gray-800 py-3 rounded-lg text-lg font-bold hover:bg-gray-400 transition">
             ← Back to cart
           </Link>
           <button
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="flex-1 bg-green-600 text-white py-3 rounded-lg text-lg font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition"
-          >
+            onClick={handleSubmit} disabled={submitting}
+            className="flex-1 bg-green-600 text-white py-3 rounded-lg text-lg font-bold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition">
             {submitting ? "Processing..." : "Comfirm order 🛒"}
           </button>
         </div>

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductByIdApi } from "../api/productApi";
 import { useCart } from "../context/CartContext";
+import { toast } from 'react-toastify';
+
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -27,7 +29,7 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     addToCart(product, quantity);
-    alert('Add into cart seuccess！');
+    toast.success('Added to cart successfully! 🛒');
   };
 
   if (loading) {

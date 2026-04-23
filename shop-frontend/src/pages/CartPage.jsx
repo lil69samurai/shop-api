@@ -10,14 +10,14 @@ const CartPage = () => {
   // Handle Checkout
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      alert("Please log in before you can check out.！");
+      toast.warning("Please login first！");
       navigate("/login"); // Redirecting to the login page
       return;
     }
     navigate("/orders/create");
   };
 
-  // If the cart is empty
+  // If the cart is empty.
   if (cartItems.length === 0) {
     return (
       <div className="max-w-2xl mx-auto mt-20 text-center p-6 bg-gray-50 rounded-lg shadow">
@@ -30,7 +30,7 @@ const CartPage = () => {
     );
   }
 
-  // 購物車有商品的畫面
+  // Show all product in the cart.
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6">
       <h1 className="text-3xl font-bold mb-6 border-b pb-4">Cart List</h1>
