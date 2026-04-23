@@ -18,6 +18,7 @@ import NotFoundPage from "../pages/NotFoundPage";
 import CartPage from "../pages/CartPage";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ProfilePage from "../pages/ProfilePage";
 
 const AppRoutes = () => {
   return (
@@ -40,6 +41,9 @@ const AppRoutes = () => {
                 } />
                 <Route path="/orders/:id" element={
                   <ProtectedRoute><OrderDetailPage /></ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                    <ProtectedRoute><ProfilePage /></ProtectedRoute>
                 } />
 
          <Route path="/admin" element={

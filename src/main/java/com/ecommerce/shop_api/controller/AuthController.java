@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import com.ecommerce.shop_api.dto.request.ChangePasswordRequest;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -67,5 +68,20 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(ApiResponse.success("取得使用者資訊成功", response));
+    }
+
+    // PUT: Change password | パスワードを変更する
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        authService.changePassword(
+                userDetails.getUsername(),
+                request.getCurrentPassword(),
+                request.getNewPassword()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success("Password changed successfully", null));
     }
 }

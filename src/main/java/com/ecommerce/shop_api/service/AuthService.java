@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.ecommerce.shop_api.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +88,22 @@ public class AuthService {
                 .role(user.getRole().name())
                 .build();
     }
+
+    // Change password | パスワードを変更する
+    public void changePassword(String username, String currentPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Verify current password | 現在のパスワードを確認する
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Update password | パスワードを更新する
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     // Register admin user | 管理者ユーザーを登録する
     public AuthResponse registerAdmin(RegisterRequest request) {
 

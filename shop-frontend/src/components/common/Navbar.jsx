@@ -44,9 +44,9 @@ const Navbar = () => {
                 </Link>
               )}
 
-              <span className="text-gray-400 text-sm">
+              <Link to="/profile" className="text-gray-400 text-sm hover:text-white">
                 👤 {user?.username}
-              </span>
+              </Link>
 
               <button
                 onClick={handleLogout}
