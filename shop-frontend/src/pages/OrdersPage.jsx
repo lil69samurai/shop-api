@@ -40,7 +40,7 @@ const OrdersPage = () => {
   return (
     <div style={{maxWidth: "800px", margin: "0 auto", padding: "24px"}}>
           <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px"}}>
-            <h1 style={{fontSize: "24px", fontWeight: "bold"}}>My Orders</h1>
+            <h1 style={{fontSize: "24px", fontWeight: "bold"}}>Goods in Your Bag</h1>
             <Link to="/orders/create" style={{background: "#3b82f6", color: "white", padding: "8px 16px", borderRadius: "4px", textDecoration: "none"}}>+ New Order</Link>
           </div>
 

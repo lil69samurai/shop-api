@@ -15,16 +15,16 @@ const Navbar = () => {
     <nav className="bg-gray-800 text-white p-4">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
         <Link to="/" className="text-xl font-bold">
-         Shop
+         Best for sure
         </Link>
 
         <div className="flex gap-4 items-center">
           <Link to="/products" className="hover:text-gray-300">
-            Products
+            Goods
           </Link>
 
         <Link to="/cart" className="relative hover:text-gray-300">
-            🛒 Cart
+            Bag
             {cartItemCount > 0 && (
               <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {cartItemCount}

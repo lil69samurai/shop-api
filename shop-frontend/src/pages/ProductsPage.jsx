@@ -104,7 +104,7 @@ const ProductsPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Products</h1>
+      <h1 className="text-2xl font-bold mb-6">What's Good</h1>
 
       {/* Search and Filter */}
       <div className="bg-gray-50 p-4 rounded-lg shadow-sm mb-6">
