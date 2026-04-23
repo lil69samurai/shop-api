@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getProductsApi, deleteProductApi, createProductApi, updateProductApi } from "../api/productApi";
+import { getProductsApi, deleteProductApi, createProductApi, updateProductApi, uploadProductImageApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
+import { toast } from "react-toastify";
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -9,20 +10,22 @@ const AdminProductsPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [error, setError] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-   const [form, setForm] = useState({
-      name: "",
-      description: "",
-      price: "",
-      stock: "",
-      categoryId: "",
-    });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    categoryId: "",
+  });
 
-const fetchData = async () => {
+  const fetchData = async () => {
     try {
       const productData = await getProductsApi(0, 100);
       setProducts(productData.data.content || []);
-
       const categoryData = await getCategoriesApi();
       setCategories(categoryData.data || []);
     } catch (err) {
@@ -32,7 +35,7 @@ const fetchData = async () => {
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -40,13 +43,23 @@ useEffect(() => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
   const resetForm = () => {
     setForm({ name: "", description: "", price: "", stock: "", categoryId: "" });
     setEditingProduct(null);
+    setImageFile(null);
+    setImagePreview(null);
     setError("");
   };
 
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -59,12 +72,23 @@ const handleSubmit = async (e) => {
     };
 
     try {
+      let savedProduct;
       if (editingProduct) {
-        await updateProductApi(editingProduct.id, productData);
+        savedProduct = await updateProductApi(editingProduct.id, productData);
       } else {
-        await createProductApi(productData);
+        savedProduct = await createProductApi(productData);
       }
+
+      const productId = savedProduct?.data?.id || editingProduct?.id;
+      if (imageFile && productId) {
+        setUploading(true);
+        await uploadProductImageApi(productId, imageFile);
+        setUploading(false);
+      }
+
+      toast.success(editingProduct ? "Product updated!" : "Product created!");
       resetForm();
+      setShowForm(false);
       fetchData();
     } catch (err) {
       setError("Failed to save product");
@@ -72,7 +96,26 @@ const handleSubmit = async (e) => {
     }
   };
 
-const handleEdit = (product) => {
+  const handleImageUpload = async (productId) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        await uploadProductImageApi(productId, file);
+        toast.success("Image uploaded!");
+        fetchData();
+      } catch (err) {
+        toast.error("Failed to upload image");
+        console.error(err);
+      }
+    };
+    input.click();
+  };
+
+  const handleEdit = (product) => {
     setForm({
       name: product.name,
       description: product.description,
@@ -81,17 +124,20 @@ const handleEdit = (product) => {
       categoryId: product.categoryId,
     });
     setEditingProduct(product);
+    setImageFile(null);
+    setImagePreview(product.imageUrl ? "http://localhost:8080" + product.imageUrl : null);
     setShowForm(true);
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
-
     try {
       await deleteProductApi(id);
+      toast.success("Product deleted!");
       fetchData();
     } catch (err) {
-      console.error("Failed to delete product", err);
+      toast.error("Failed to delete product");
+      console.error(err);
     }
   };
 
@@ -120,128 +166,114 @@ const handleEdit = (product) => {
       </div>
 
       {showForm && (
-              <form onSubmit={handleSubmit} className="border rounded p-4 mb-6 space-y-4">
-                <h2 className="font-bold text-lg">
-                  {editingProduct ? "Edit Product" : "New Product"}
-                </h2>
-
-                {error && (
-                  <div className="bg-red-100 text-red-700 p-3 rounded">{error}</div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-1 font-medium">Name</label>
-                    <input
-                      name="name"
-                      value={form.name}
-                      onChange={handleChange}
-                      className="w-full border p-2 rounded"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 font-medium">Category</label>
-                    <select
-                      name="categoryId"
-                      value={form.categoryId}
-                      onChange={handleChange}
-                      className="w-full border p-2 rounded"
-                      required
-                    >
-                      <option value="">Select category</option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block mb-1 font-medium">Price</label>
-                    <input
-                      name="price"
-                      type="number"
-                      step="0.01"
-                      value={form.price}
-                      onChange={handleChange}
-                      className="w-full border p-2 rounded"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block mb-1 font-medium">Stock</label>
-                    <input
-                      name="stock"
-                      type="number"
-                      value={form.stock}
-                      onChange={handleChange}
-                      className="w-full border p-2 rounded"
-                      required
-                    />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-medium">Description</label>
-                    <textarea
-                      name="description"
-                      value={form.description}
-                      onChange={handleChange}
-                      className="w-full border p-2 rounded"
-                      rows="3"
-                    />
-                  </div>
+        <form onSubmit={handleSubmit} className="border rounded p-4 mb-6 space-y-4">
+          <h2 className="font-bold text-lg">
+            {editingProduct ? "Edit Product" : "New Product"}
+          </h2>
+          {error && (
+            <div className="bg-red-100 text-red-700 p-3 rounded">{error}</div>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block mb-1 font-medium">Name</label>
+              <input name="name" value={form.name} onChange={handleChange}
+                className="w-full border p-2 rounded" required />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Category</label>
+              <select name="categoryId" value={form.categoryId} onChange={handleChange}
+                className="w-full border p-2 rounded" required>
+                <option value="">Select category</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Price</label>
+              <input name="price" type="number" step="0.01" value={form.price}
+                onChange={handleChange} className="w-full border p-2 rounded" required />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium">Stock</label>
+              <input name="stock" type="number" value={form.stock}
+                onChange={handleChange} className="w-full border p-2 rounded" required />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block mb-1 font-medium">Description</label>
+              <textarea name="description" value={form.description}
+                onChange={handleChange} className="w-full border p-2 rounded" rows="3" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block mb-1 font-medium">Product Image</label>
+              <input type="file" accept="image/*" onChange={handleImageChange}
+                className="w-full border p-2 rounded" />
+              {imagePreview && (
+                <div className="mt-2">
+                  <img src={imagePreview} alt="Preview"
+                    className="w-32 h-32 object-cover rounded border" />
                 </div>
+              )}
+            </div>
+          </div>
+          <button className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+            disabled={uploading}>
+            {uploading ? "Uploading..." : editingProduct ? "Update" : "Create"}
+          </button>
+        </form>
+      )}
 
-                <button className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
-                            {editingProduct ? "Update" : "Create"}
-                          </button>
-                        </form>
-                      )}
-
-                      {/* Product Table */}
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border">
-                          <thead>
-                            <tr className="bg-gray-100">
-                              <th className="border p-2 text-left">ID</th>
-                              <th className="border p-2 text-left">Name</th>
-                              <th className="border p-2 text-left">Price</th>
-                              <th className="border p-2 text-left">Stock</th>
-                              <th className="border p-2 text-left">Category</th>
-                              <th className="border p-2 text-left">Status</th>
-                              <th className="border p-2 text-left">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {products.map((product) => (
-                              <tr key={product.id} className="hover:bg-gray-50">
-                                <td className="border p-2">{product.id}</td>
-                                <td className="border p-2">{product.name}</td>
-                                <td className="border p-2">${product.price}</td>
-                                <td className="border p-2">{product.stock}</td>
-                                <td className="border p-2">{product.categoryName}</td>
-                                <td className="border p-2">{product.status}</td>
-                                <td className="border p-2">
-                                  <button
-                                    onClick={() => handleEdit(product)}
-                                    className="text-blue-500 hover:underline mr-3"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(product.id)}
-                                    className="text-red-500 hover:underline"
-                                  >
-                                    Delete
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+      {/* Product Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse border">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border p-2 text-left">Image</th>
+              <th className="border p-2 text-left">ID</th>
+              <th className="border p-2 text-left">Name</th>
+              <th className="border p-2 text-left">Price</th>
+              <th className="border p-2 text-left">Stock</th>
+              <th className="border p-2 text-left">Category</th>
+              <th className="border p-2 text-left">Status</th>
+              <th className="border p-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.id} className="hover:bg-gray-50">
+                <td className="border p-2">
+                  {product.imageUrl ? (
+                    <img src={"http://localhost:8080" + product.imageUrl} alt={product.name}
+                      className="w-16 h-16 object-cover rounded" />
+                  ) : (
+                    <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
+                      No Image
                     </div>
-                  );
-                };
+                  )}
+                </td>
+                <td className="border p-2">{product.id}</td>
+                <td className="border p-2">{product.name}</td>
+                <td className="border p-2">${product.price}</td>
+                <td className="border p-2">{product.stock}</td>
+                <td className="border p-2">{product.categoryName}</td>
+                <td className="border p-2">{product.status}</td>
+                <td className="border p-2">
+                  <div className="flex gap-2">
+                    <button onClick={() => handleEdit(product)}
+                      className="text-blue-500 hover:underline">Edit</button>
+                    <button onClick={() => handleImageUpload(product.id)}
+                      className="text-green-500 hover:underline">📷</button>
+                    <button onClick={() => handleDelete(product.id)}
+                      className="text-red-500 hover:underline">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
 
-                export default AdminProductsPage;
+export default AdminProductsPage;

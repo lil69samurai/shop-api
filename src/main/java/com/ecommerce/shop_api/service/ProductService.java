@@ -42,6 +42,26 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public Page<ProductResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
+        Page<Product> products;
+
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasCategory = categoryId != null;
+
+        if (hasKeyword && hasCategory) {
+            products = productRepository.searchByKeywordAndCategory(keyword, categoryId, pageable);
+        } else if (hasKeyword) {
+            products = productRepository.searchByKeyword(keyword, pageable);
+        } else if (hasCategory) {
+            products = productRepository.findByCategoryId(categoryId, pageable);
+        } else {
+            products = productRepository.findAll(pageable);
+        }
+
+        return products.map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該商品 ID: " + id));
@@ -72,6 +92,14 @@ public class ProductService {
         productRepository.delete(product);
     }
 
+    @Transactional
+    public ProductResponse updateProductImage(Long id, String imageUrl) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find Product ID: " + id));
+        product.setImageUrl(imageUrl);
+        Product updated = productRepository.save(product);
+        return mapToResponse(updated);
+    }
 
     private ProductResponse mapToResponse(Product product) {
         return ProductResponse.builder()
@@ -80,6 +108,7 @@ public class ProductService {
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .stock(product.getStock())
+                .imageUrl(product.getImageUrl())
                 .status(product.getStatus().name())
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())

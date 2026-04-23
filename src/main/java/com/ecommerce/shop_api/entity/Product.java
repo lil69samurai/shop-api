@@ -32,6 +32,9 @@ public class Product {
     @Column(nullable = false)
     private Integer stock;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 

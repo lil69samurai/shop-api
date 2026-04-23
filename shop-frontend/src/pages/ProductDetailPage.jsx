@@ -47,6 +47,17 @@ const ProductDetailPage = () => {
       </Link>
 
       <div className="mt-6">
+        {product.imageUrl ? (
+            <img
+              src={"http://localhost:8080" + product.imageUrl}
+              alt={product.name}
+              className="w-full max-h-96 object-cover rounded-lg mb-6"
+            />
+          ) : (
+            <div className="w-full h-64 bg-gray-100 rounded-lg mb-6 flex items-center justify-center text-gray-400 text-lg">
+              No Image Available
+            </div>
+          )}
         <h1 className="text-3xl font-bold">{product.name}</h1>
         <p className="text-gray-600 mt-2">{product.description}</p>
         <p className="text-2xl text-green-600 font-bold mt-4">

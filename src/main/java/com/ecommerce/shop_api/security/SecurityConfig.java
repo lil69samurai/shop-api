@@ -49,6 +49,8 @@ public class SecurityConfig {
                         // Allow error endpoint | エラーエンドポイントを許可する
                         .requestMatchers("/error").permitAll()
 
+                        // 加上這行：允許存取上傳的圖片
+                        .requestMatchers("/uploads/**").permitAll()
 
                         // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()

@@ -13,6 +13,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.ecommerce.shop_api.service.FileStorageService;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProductController {
 
     private final ProductService productService;
+    private final FileStorageService fileStorageService;  // 加上這行
 
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
@@ -34,13 +37,15 @@ public class ProductController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long categoryId) {
 
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<ProductResponse> responses = productService.getAllProducts(pageable);
-        return ResponseEntity.ok(ApiResponse.success("查詢成功", responses));
+        return ResponseEntity.ok(ApiResponse.success("Search successful", responses));
     }
 
     @GetMapping("/{id}")
@@ -61,5 +66,15 @@ public class ProductController {
     public ResponseEntity<ApiResponse<String>> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
         return ResponseEntity.ok(ApiResponse.success("Product deleted successfully", null));
+    }
+
+    @PostMapping("/{id}/image")
+    public ResponseEntity<ApiResponse<ProductResponse>> uploadProductImage(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+
+        String imageUrl = fileStorageService.saveFile(file);
+        ProductResponse response = productService.updateProductImage(id, imageUrl);
+        return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
     }
 }
