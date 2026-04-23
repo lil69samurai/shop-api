@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProductByIdApi } from "../api/productApi";
+import { useCart } from "../context/CartContext";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -21,6 +24,11 @@ const ProductDetailPage = () => {
 
     fetchProduct();
   }, [id]);
+
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    alert('Add into cart seuccess！');
+  };
 
   if (loading) {
     return <div className="text-center mt-10 text-gray-500">Loading...</div>;
@@ -48,6 +56,26 @@ const ProductDetailPage = () => {
         </p>
         <p className="text-gray-500 mt-1">Status: {product.status}</p>
       </div>
+
+      <div className="mt-6 flex items-center gap-4 border-t pt-6">
+              <label className="text-gray-700 font-semibold">Amount：</label>
+              <input
+                type="number"
+                min="1"
+                max={product.stockQuantity}
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="border p-2 w-20 rounded"
+              />
+
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stockQuantity === 0}
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                {product.stockQuantity === 0 ? 'Sold out' : 'Add to cart'}
+              </button>
+            </div>
     </div>
   );
 };

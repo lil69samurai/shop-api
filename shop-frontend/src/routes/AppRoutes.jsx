@@ -15,6 +15,7 @@ import AdminProductsPage from "../pages/AdminProductsPage";
 import AdminCategoriesPage from "../pages/AdminCategoriesPage";
 import AdminOrdersPage from "../pages/AdminOrdersPage";
 import NotFoundPage from "../pages/NotFoundPage";
+import CartPage from "../pages/CartPage";
 
 const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/products/:id" element={<ProductDetailPage />} />
+        <Route path="/cart" element={<CartPage />} />
 
         <Route path="/orders" element={
                   <ProtectedRoute><OrdersPage /></ProtectedRoute>
