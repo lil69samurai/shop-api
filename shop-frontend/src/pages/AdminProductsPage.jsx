@@ -20,7 +20,7 @@ const AdminProductsPage = () => {
 
 const fetchData = async () => {
     try {
-      const productData = await getProductsApi();
+      const productData = await getProductsApi(0, 100);
       setProducts(productData.data.content || []);
 
       const categoryData = await getCategoriesApi();

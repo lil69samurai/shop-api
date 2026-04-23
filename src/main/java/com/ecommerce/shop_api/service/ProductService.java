@@ -47,6 +47,31 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該商品 ID: " + id));
         return mapToResponse(product);
     }
+    @Transactional
+    public ProductResponse updateProduct(Long id, ProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find Product ID: " + id));
+
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find Category ID: " + request.getCategoryId()));
+
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+        product.setCategory(category);
+
+        Product updated = productRepository.save(product);
+        return mapToResponse(updated);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Can't find Product ID: " + id));
+        productRepository.delete(product);
+    }
+
 
     private ProductResponse mapToResponse(Product product) {
         return ProductResponse.builder()

@@ -11,23 +11,55 @@ const ProductsPage = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-        getProductsApi(),
+
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const pageSize = 9; // 每頁顯示 9 個商品 (3x3)
+
+  const fetchData = async (page = 0) => {
+    setLoading(true);
+    try {
+      const [productsData, categoriesData] = await Promise.all([
+        getProductsApi(page, pageSize),
         getCategoriesApi(),
-        ]);
-        setProducts(productsData.data.content || []);
-        setCategories(categoriesData.data || categoriesData || []);
-      } catch (error) {
-        console.error("Failed to fetch data", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+      ]);
+
+      const pageData = productsData.data;
+      setProducts(pageData.content || []);
+      setTotalPages(pageData.totalPages || 0);
+      setTotalElements(pageData.totalElements || 0);
+      setCurrentPage(pageData.number || 0);
+
+      setCategories(categoriesData.data || categoriesData || []);
+    } catch (error) {
+      console.error("Failed to fetch data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(currentPage);
+  }, [currentPage]);
+
+//   useEffect(() => {
+//     const fetchProducts = async () => {
+//       try {
+//         const [productsData, categoriesData] = await Promise.all([
+//         getProductsApi(),
+//         getCategoriesApi(),
+//         ]);
+//         setProducts(productsData.data.content || []);
+//         setCategories(categoriesData.data || categoriesData || []);
+//       } catch (error) {
+//         console.error("Failed to fetch data", error);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchProducts();
+//   }, []);
 
 const filteredProducts = products.filter((product) => {
     const matchesKeyword =
@@ -48,6 +80,39 @@ const filteredProducts = products.filter((product) => {
     setSearchKeyword("");
     setSelectedCategory("");
   };
+
+  const handlePreviousPage = () => {
+      if (currentPage > 0) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
+
+    const handleNextPage = () => {
+      if (currentPage < totalPages - 1) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
+
+    const handlePageClick = (page) => {
+      setCurrentPage(page);
+    };
+
+    // 產生頁碼按鈕陣列
+    const getPageNumbers = () => {
+      const pages = [];
+      const maxVisible = 5; // 最多顯示 5 個頁碼
+      let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+      let end = Math.min(totalPages, start + maxVisible);
+
+      if (end - start < maxVisible) {
+        start = Math.max(0, end - maxVisible);
+      }
+
+      for (let i = start; i < end; i++) {
+        pages.push(i);
+      }
+      return pages;
+    };
 
   if (loading) {
     return <div className="text-center mt-10 text-gray-500">Loading...</div>;
