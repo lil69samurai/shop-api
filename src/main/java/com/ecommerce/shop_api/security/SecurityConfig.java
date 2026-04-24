@@ -1,6 +1,5 @@
 package com.ecommerce.shop_api.security;
 
-import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +11,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,27 +39,27 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Allow auth endpoints | 認証エンドポイントを許可する
+                        // ★ 允許所有 OPTIONS 請求（CORS preflight）
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Allow auth endpoints
                         .requestMatchers("/api/auth/register").permitAll()
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/auth/register-admin").permitAll()
-                        // Allow error endpoint | エラーエンドポイントを許可する
                         .requestMatchers("/error").permitAll()
-
-                        // 加上這行：允許存取上傳的圖片
                         .requestMatchers("/uploads/**").permitAll()
 
-                        // Allow anyone to view products and categories | 誰でも商品とカテゴリを閲覧できるようにする
+                        // Allow anyone to view products and categories
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()// Only ADMIN can create/update/delete products and categories
-                        // 管理者のみ商品とカテゴリの作成・更新・削除が可能
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+
+                        // Only ADMIN can create/update/delete
                         .requestMatchers(HttpMethod.POST, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/products/**", "/api/categories/**").hasAuthority("ROLE_ADMIN")
 
-                        // Authenticated users can manage their own orders | 認証済みユーザーは注文を管理できる
+                        // Authenticated users can manage orders
                         .requestMatchers("/api/orders/**").authenticated()
-                        // Require authentication for all other requests | その他のすべてのリクエストには認証が必要
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
@@ -71,37 +68,36 @@ public class SecurityConfig {
 
         return http.build();
     }
+
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(customUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
         String frontendUrl = System.getenv("FRONTEND_URL");
-        if (frontendUrl != null) {
-            configuration.setAllowedOrigins(List.of(
-                    "http://localhost:5173",
-                    "http://localhost:3000",
-                    frontendUrl
-            ));
-        } else {
-            configuration.setAllowedOrigins(List.of(
-                    "http://localhost:5173",
-                    "http://localhost:3000"
-            ));
-        }
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://shop-frontend-623k.onrender.com",
+                frontendUrl != null ? frontendUrl : "http://localhost:5173"
+        ));
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
