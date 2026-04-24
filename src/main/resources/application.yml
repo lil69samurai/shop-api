@@ -3,33 +3,37 @@ spring:
     name: shop-api
 
   datasource:
-    url: jdbc:mysql://localhost:3307/shop_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3307/shop_db?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true}
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
 
   flyway:
     enabled: true
     baseline-on-migrate: true
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 jwt:
-  secret: ThisIsAVerySecureSecretKeyForEcommerceShopApi2024!!
+  secret: ${JWT_SECRET:ThisIsAVerySecureSecretKeyForEcommerceShopApi2024!!}
   expiration: 86400000
 
 logging:
   level:
-    com.ecommerce.shop_api: DEBUG
-    com.ecommerce.shop_api.security: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
+    com.ecommerce.shop_api: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
