@@ -88,11 +88,25 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Setup allowed origins, methods, and headers | 許可されるオリジン、メソッド、ヘッダーを設定する
-        configuration.setAllowedOriginPatterns(List.of("*"));
+
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        if (frontendUrl != null) {
+            configuration.setAllowedOrigins(List.of(
+                    "http://localhost:5173",
+                    "http://localhost:3000",
+                    frontendUrl
+            ));
+        } else {
+            configuration.setAllowedOrigins(List.of(
+                    "http://localhost:5173",
+                    "http://localhost:3000"
+            ));
+        }
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
