@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProductsApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
+import { API_BASE_URL } from "../utils/config";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -45,13 +46,11 @@ const ProductsPage = () => {
     fetchProducts(0);
   }, []);
 
-  // 點 Search 按鈕
   const handleSearch = () => {
     setCurrentPage(0);
     fetchProducts(0, searchKeyword, selectedCategory);
   };
 
-  // 選擇分類後立即搜尋
   const handleCategoryChange = (e) => {
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
@@ -59,7 +58,6 @@ const ProductsPage = () => {
     fetchProducts(0, searchKeyword, newCategory);
   };
 
-  // 清除所有篩選
   const handleClearFilters = () => {
     setSearchKeyword("");
     setSelectedCategory("");
@@ -67,14 +65,12 @@ const ProductsPage = () => {
     fetchProducts(0, "", "");
   };
 
-  // 按 Enter 搜尋
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
 
-  // 換頁時用目前的搜尋條件
   const handlePageChange = (page) => {
     setCurrentPage(page);
     fetchProducts(page, searchKeyword, selectedCategory);
@@ -171,7 +167,7 @@ const ProductsPage = () => {
             >
               {product.imageUrl ? (
                 <img
-                  src={"http://localhost:8080" + product.imageUrl}
+                  src={API_BASE_URL + product.imageUrl}
                   alt={product.name}
                   className="w-full h-48 object-cover rounded mb-3"
                 />

@@ -125,7 +125,7 @@ const AdminProductsPage = () => {
     });
     setEditingProduct(product);
     setImageFile(null);
-    setImagePreview(product.imageUrl ? "http://localhost:8080" + product.imageUrl : null);
+    setImagePreview((import.meta.env.VITE_API_URL || "http://localhost:8080") + product.imageUrl)
     setShowForm(true);
   };
 
