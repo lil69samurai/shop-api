@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 
 @Data
 public class ProductRequest {
+    private String imageUrl;
 
     @NotBlank(message = "Product's name can not be empty.")
     private String name;

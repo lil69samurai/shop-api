@@ -3,9 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 const LoginPage = () => {
+  console.log("VITE_API_URL =", import.meta.env.VITE_API_URL);
   const { login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
     username: "",
@@ -22,12 +24,16 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       await login(form);
       navigate("/products");
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
+      console.error("Login failed:", err);
+      setError("Login failed. Please check your credentials or wait for server wake-up.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,6 +47,12 @@ const LoginPage = () => {
         </div>
       )}
 
+      {loading && (
+        <div className="bg-yellow-100 text-yellow-700 p-3 rounded mb-4">
+          Server may be waking up on Render free plan, please wait...
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block mb-1 font-medium">Username</label>
@@ -50,6 +62,7 @@ const LoginPage = () => {
             value={form.username}
             onChange={handleChange}
             className="w-full border p-2 rounded"
+            autoComplete="username"
             required
           />
         </div>
@@ -63,16 +76,21 @@ const LoginPage = () => {
             value={form.password}
             onChange={handleChange}
             className="w-full border p-2 rounded"
+            autoComplete="current-password"
             required
           />
         </div>
 
-        <button className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600">
-          Login
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+        >
+          {loading ? "Logging in..." : "Login"}
         </button>
       </form>
 
-      <p className="mt-4 text-center text-gray-600">
+      <p className="mt-4 text-center text-gray-ㄋ600">
         Don't have an account?{" "}
         <Link to="/register" className="text-blue-500 hover:underline">
           Register

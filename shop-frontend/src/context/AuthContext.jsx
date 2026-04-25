@@ -31,10 +31,17 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (formData) => {
+    console.log("login() called with:", formData);
+
     const data = await loginApi(formData);
+    console.log("loginApi response:", data);
+
     const newToken = data.data.token;
+    console.log("token =", newToken);
+
     localStorage.setItem("token", newToken);
     setToken(newToken);
+
     return data;
   };
 
