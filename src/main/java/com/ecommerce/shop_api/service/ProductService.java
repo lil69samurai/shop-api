@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProductService {
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
@@ -29,6 +30,7 @@ public class ProductService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .stock(request.getStock())
+                .imageUrl(request.getImageUrl())
                 .category(category)
                 .build();
 
@@ -67,6 +69,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該商品 ID: " + id));
         return mapToResponse(product);
     }
+
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
@@ -80,6 +83,7 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         product.setCategory(category);
+        product.setImageUrl(request.getImageUrl());
 
         Product updated = productRepository.save(product);
         return mapToResponse(updated);
@@ -96,6 +100,7 @@ public class ProductService {
     public ProductResponse updateProductImage(Long id, String imageUrl) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find Product ID: " + id));
+
         product.setImageUrl(imageUrl);
         Product updated = productRepository.save(product);
         return mapToResponse(updated);
