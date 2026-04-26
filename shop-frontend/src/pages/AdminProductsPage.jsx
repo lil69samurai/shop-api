@@ -68,42 +68,25 @@ const AdminProductsPage = () => {
     setUploading(false);
 
     try {
-        const formData = new FormData();
-        formData.append("name", form.name);
-        formData.append("description", form.description || "");
-        formData.append("price", parseFloat(form.price));
-        formData.append("stock", parseInt(form.stock));
-        formData.append("categoryId", parseInt(form.categoryId));
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("description", form.description || "");
+      formData.append("price", parseFloat(form.price));
+      formData.append("stock", parseInt(form.stock));
+      formData.append("categoryId", parseInt(form.categoryId));
 
-        if (imageFile) {
-          formData.append("image", imageFile);
-        }
-
-        if (editingProduct) {
-          await updateProductApi(editingProduct.id, formData);
-          toast.success("Product updated!");
-        } else {
-          await createProductApi(formData);
-          toast.success("Product created!");
-        }
-
-        resetForm();
-        setShowForm(false);
-        fetchData();
-      } catch (err) {
-        setError("Failed to save product");
-        console.error(err);
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
-    };
 
-//     const productId = savedProduct?.data?.id || editingProduct?.id;
-//      if (imageFile && productId) {
-//        setUploading(true);
-//        await uploadProductImageApi(productId, imageFile);
-//        setUploading(false);
-//      }
+      if (editingProduct) {
+        await updateProductApi(editingProduct.id, formData);
+        toast.success("Product updated!");
+      } else {
+        await createProductApi(formData);
+        toast.success("Product created!");
+      }
 
-      toast.success(editingProduct ? "Product updated!" : "Product created!");
       resetForm();
       setShowForm(false);
       fetchData();
