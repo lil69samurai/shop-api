@@ -259,7 +259,11 @@ const AdminProductsPage = () => {
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
-                      No Image
+                      <img
+                        src={getImageSrc(product.imageUrl)}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded"
+                      />
                     </div>
                   )}
                 </td>
