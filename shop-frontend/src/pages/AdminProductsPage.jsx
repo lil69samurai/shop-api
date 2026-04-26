@@ -252,18 +252,15 @@ const AdminProductsPage = () => {
             {products.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="border p-2">
-                  {product.imageUrl ? (
-                    <img src={getImageSrc(product.imageUrl)}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded"
+                   {product.imageUrl ? (
+                     <img
+                       src={getImageSrc(product.imageUrl)}
+                       alt={product.name}
+                       className="w-16 h-16 object-cover rounded"
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">
-                      <img
-                        src={getImageSrc(product.imageUrl)}
-                        alt={product.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
+                          No Image
                     </div>
                   )}
                 </td>
