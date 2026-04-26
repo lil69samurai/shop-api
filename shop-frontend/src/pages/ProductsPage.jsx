@@ -167,7 +167,7 @@ const ProductsPage = () => {
             >
               {product.imageUrl ? (
                 <img
-                  src={API_BASE_URL + product.imageUrl}
+                  src={product.imageUrl}
                   alt={product.name}
                   className="w-full h-48 object-cover rounded mb-3"
                 />

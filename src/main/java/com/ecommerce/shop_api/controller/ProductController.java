@@ -50,7 +50,7 @@ public class ProductController {
 
             ProductResponse response = productService.createProduct(request);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.success("商品建立成功", response));
+                    .body(ApiResponse.success("Product created successfully", response));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -118,7 +118,7 @@ public class ProductController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("图片上传失败: " + e.getMessage()));
+                    .body(ApiResponse.error("Image upload failed: " + e.getMessage()));
         }
     }
 
@@ -152,7 +152,7 @@ public class ProductController {
             return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("图片上传失败: " + e.getMessage()));
+                    .body(ApiResponse.error("Image upload failed: " + e.getMessage()));
         }
     }
 }
