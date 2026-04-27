@@ -28,10 +28,10 @@ const AdminProductsPage = () => {
     try {
       setLoading(true);
       const [prodRes, catRes] = await Promise.all([
-        productApi.getAllProducts(),
-        categoryApi.getAllCategories()
+        productApi.getProductsApi(0, 100),
+        (categoryApi.getAllCategoriesApi ? categoryApi.getAllCategoriesApi() : (categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getAllCategories()))
       ]);
-      setProducts(prodRes.data || prodRes || []);
+      setProducts(prodRes.content || prodRes.data || prodRes || []);
       setCategories(catRes.data || catRes || []);
     } catch (error) {
       toast.error('資料載入失敗');
@@ -87,21 +87,17 @@ const AdminProductsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const submitData = new FormData();
-      const productJson = JSON.stringify({
+      const productData = {
         name: formData.name, description: formData.description,
         price: Number(formData.price), stock: Number(formData.stock),
         categoryId: Number(formData.categoryId)
-      });
-      submitData.append('product', new Blob([productJson], { type: 'application/json' }));
-      
-      if (imageFile) submitData.append('image', imageFile);
+      };
 
       if (isEditing) {
-        await productApi.updateProduct(currentId, submitData);
+        await productApi.updateProductApi(currentId, productData, imageFile);
         toast.success(showImageModal ? '圖片上傳成功' : '商品更新成功');
       } else {
-        await productApi.createProduct(submitData);
+        await productApi.createProductApi(productData, imageFile);
         toast.success('商品新增成功');
       }
       closeModal();
@@ -115,7 +111,7 @@ const AdminProductsPage = () => {
   const handleDelete = async (id) => {
     if (window.confirm('確定要刪除此商品嗎？')) {
       try {
-        await productApi.deleteProduct(id);
+        await productApi.deleteProductApi(id);
         toast.success('商品已刪除');
         fetchData();
       } catch (error) {

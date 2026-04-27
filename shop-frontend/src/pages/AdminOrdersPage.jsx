@@ -15,7 +15,7 @@ const AdminOrdersPage = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await orderApi.getAllOrders();
+      const response = await orderApi.getAllOrdersApi();
       setOrders(response.data || response || []);
     } catch (error) {
       toast.error('無法載入訂單列表');
@@ -41,8 +41,8 @@ const AdminOrdersPage = () => {
     setFetchingDetail(true);
     try {
       // 嘗試抓取完整的訂單明細
-      if (typeof orderApi.getOrderById === 'function') {
-        const res = await orderApi.getOrderById(order.id);
+      if (typeof orderApi.getOrderByIdApi === 'function') {
+        const res = await orderApi.getOrderByIdApi(order.id);
         if (res && (res.data || res.id)) {
           setSelectedOrder(res.data || res);
         }

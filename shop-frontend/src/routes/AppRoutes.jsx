@@ -14,6 +14,7 @@ import AdminDashboardPage from "../pages/AdminDashboardPage";
 import AdminProductsPage from "../pages/AdminProductsPage";
 import AdminCategoriesPage from "../pages/AdminCategoriesPage";
 import AdminOrdersPage from "../pages/AdminOrdersPage";
+import AdminUsersPage from "../pages/AdminUsersPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import CartPage from "../pages/CartPage";
 import { ToastContainer } from 'react-toastify';
@@ -57,6 +58,9 @@ const AppRoutes = () => {
                  } />
                  <Route path="/admin/orders" element={
                    <AdminRoute><AdminOrdersPage /></AdminRoute>
+                 } />
+                 <Route path="/admin/users" element={
+                   <AdminRoute><AdminUsersPage /></AdminRoute>
                  } />
 
         <Route path="*" element={<NotFoundPage />} />
