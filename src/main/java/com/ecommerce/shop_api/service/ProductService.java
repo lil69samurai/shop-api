@@ -29,6 +29,7 @@ public class ProductService {
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .stock(request.getStock())
+                .imageUrl(request.getImageUrl())
                 .category(category)
                 .build();
 
@@ -67,6 +68,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到該商品 ID: " + id));
         return mapToResponse(product);
     }
+
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
@@ -80,6 +82,10 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
         product.setCategory(category);
+
+        if (request.getImageUrl() != null) {
+            product.setImageUrl(request.getImageUrl());
+        }
 
         Product updated = productRepository.save(product);
         return mapToResponse(updated);

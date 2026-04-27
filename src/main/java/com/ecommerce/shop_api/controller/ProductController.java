@@ -13,7 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.ecommerce.shop_api.service.LocalFileStorageService;
+import com.ecommerce.shop_api.service.FileStorageService;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 
@@ -24,7 +24,7 @@ import org.springframework.http.MediaType;
 public class ProductController {
 
     private final ProductService productService;
-    private final LocalFileStorageService localFileStorageService;  // 加上這行
+    private final FileStorageService fileStorageService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
@@ -33,17 +33,17 @@ public class ProductController {
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                String imageUrl = localFileStorageService.saveFile(imageFile);
-                request.setImageUrl(imageUrl); // 需要在 ProductRequest 中添加 imageUrl 字段
+                String imageUrl = fileStorageService.saveFile(imageFile);
+                request.setImageUrl(imageUrl);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(ApiResponse.error("图片上传失败: " + e.getMessage()));
+                        .body(ApiResponse.error("Image upload failed: " + e.getMessage()));
             }
         }
 
         ProductResponse response = productService.createProduct(request);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("商品建立成功", response));
+                .body(ApiResponse.success("Product built successfully", response));
     }
 
     @GetMapping
@@ -78,13 +78,13 @@ public class ProductController {
             try {
                 ProductResponse oldProduct = productService.getProductById(id);
                 if (oldProduct.getImageUrl() != null) {
-                    localFileStorageService.deleteFile(oldProduct.getImageUrl());
+                    fileStorageService.deleteFile(oldProduct.getImageUrl());
                 }
-                String newImageUrl = localFileStorageService.saveFile(imageFile);
+                String newImageUrl = fileStorageService.saveFile(imageFile);
                 request.setImageUrl(newImageUrl);
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(ApiResponse.error("图片上传失败: " + e.getMessage()));
+                        .body(ApiResponse.error("Image upload failed: " + e.getMessage()));
             }
         }
 
@@ -102,7 +102,7 @@ public class ProductController {
             @PathVariable Long id,
             @RequestParam("file") MultipartFile file) {
 
-        String imageUrl = localFileStorageService.saveFile(file);
+        String imageUrl = fileStorageService.saveFile(file);
         ProductResponse response = productService.updateProductImage(id, imageUrl);
         return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
     }
