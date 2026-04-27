@@ -28,70 +28,77 @@ const RegisterPage = () => {
       await register(form);
       navigate("/products");
     } catch (err) {
-      setError("Registration failed. Username or email may already exist.");
+      setError("登録に失敗しました。ユーザー名またはメールが既に使用されている可能性があります。");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10">
-      <h1 className="text-2xl font-bold mb-4">Register</h1>
+    <div className="bg-stone-50 min-h-screen">
+      <div className="max-w-md mx-auto pt-16 px-6">
+        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-slate-800">会員登録</h1>
+            <p className="text-stone-500 text-sm mt-1">新しいアカウントを作成</p>
+          </div>
 
-      {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
-          {error}
+          {error && (
+            <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block mb-1 font-medium text-slate-700">ユーザー名</label>
+              <input
+                name="username"
+                placeholder="ユーザー名を入力"
+                value={form.username}
+                onChange={handleChange}
+                className="w-full border border-stone-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium text-slate-700">メールアドレス</label>
+              <input
+                name="email"
+                type="email"
+                placeholder="メールアドレスを入力"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full border border-stone-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium text-slate-700">パスワード</label>
+              <input
+                name="password"
+                type="password"
+                placeholder="パスワードを入力"
+                value={form.password}
+                onChange={handleChange}
+                className="w-full border border-stone-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                required
+              />
+            </div>
+
+            <button className="w-full bg-amber-500 text-slate-900 py-3 rounded-lg hover:bg-amber-400 transition font-bold">
+              登録する
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-stone-500">
+            既にアカウントをお持ちの方は{" "}
+            <Link to="/login" className="text-amber-600 hover:text-amber-700 font-medium">
+              ログイン
+            </Link>
+          </p>
         </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 font-medium">Username</label>
-          <input
-            name="username"
-            placeholder="Enter username"
-            value={form.username}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">Email</label>
-          <input
-            name="email"
-            type="email"
-            placeholder="Enter email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1 font-medium">Password</label>
-          <input
-            name="password"
-            type="password"
-            placeholder="Enter password"
-            value={form.password}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        <button className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">
-          Register
-        </button>
-      </form>
-
-      <p className="mt-4 text-center text-gray-600">
-        Already have an account?{" "}
-        <Link to="/login" className="text-blue-500 hover:underline">
-          Login
-        </Link>
-      </p>
+      </div>
     </div>
   );
 };

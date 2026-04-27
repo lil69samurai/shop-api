@@ -1,92 +1,93 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
-import { useAuth } from "../hooks/useAuth"; // input auth hook
+import { useAuth } from "../hooks/useAuth";
+import { toast } from "react-toastify";
 
 const CartPage = () => {
   const { cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  // Handle Checkout
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      toast.warning("Please login first！");
-      navigate("/login"); // Redirecting to the login page
+      toast.warning("ログインしてください");
+      navigate("/login");
       return;
     }
     navigate("/orders/create");
   };
 
-  // If the cart is empty.
   if (cartItems.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto mt-20 text-center p-6 bg-gray-50 rounded-lg shadow">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">It's still empty here</h2>
-        <p className="text-gray-500 mb-6">Get somethin quick！</p>
-        <Link to="/products" className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
-          Get Some
-        </Link>
+      <div className="bg-stone-50 min-h-screen">
+        <div className="max-w-2xl mx-auto pt-20 text-center p-6">
+          <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-10">
+            <div className="text-5xl mb-4">🛒</div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-4">カートは空です</h2>
+            <p className="text-stone-500 mb-6">商品を追加してお買い物を始めましょう</p>
+            <Link to="/products" className="bg-slate-800 text-white px-6 py-3 rounded-lg hover:bg-slate-700 transition font-medium">
+              商品を見る
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Show all product in the cart.
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6">
-      <h1 className="text-3xl font-bold mb-6 border-b pb-4">Cart List</h1>
+    <div className="bg-stone-50 min-h-screen">
+      <div className="max-w-4xl mx-auto pt-8 px-6">
+        <h1 className="text-2xl font-bold text-slate-800 mb-6 pb-4 border-b border-stone-200">買い物かご</h1>
 
-      <div className="flex flex-col gap-4">
-        {cartItems.map((item) => (
-          <div key={item.id} className="flex items-center justify-between border p-4 rounded shadow-sm bg-white">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-              <p className="text-gray-500">Single price: <span className="text-green-600 font-bold">${item.price}</span></p>
-            </div>
-
-            <div className="flex items-center gap-6">
-              {/* Quantity adjustment area*/}
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600">Amount:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={item.stockQuantity} // Can't be over stocks.
-                  value={item.quantity}
-                  onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
-                  className="border p-1 w-16 text-center rounded"
-                />
+        <div className="flex flex-col gap-4">
+          {cartItems.map((item) => (
+            <div key={item.id} className="flex items-center justify-between bg-white border border-stone-100 p-4 rounded-xl shadow-sm">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-slate-800">{item.name}</h3>
+                <p className="text-stone-500">単価: <span className="text-amber-600 font-bold">¥{item.price}</span></p>
               </div>
 
-              {/* Subtotal */}
-              <div className="w-24 text-right">
-                <p className="font-bold text-lg text-gray-800">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </p>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <label className="text-sm text-stone-500">数量:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={item.stockQuantity}
+                    value={item.quantity}
+                    onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
+                    className="border border-stone-200 p-1 w-16 text-center rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+
+                <div className="w-24 text-right">
+                  <p className="font-bold text-lg text-slate-800">
+                    ¥{(item.price * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="text-red-500 hover:text-red-700 font-medium px-3 py-1 bg-red-50 rounded-lg transition"
+                >
+                  削除
+                </button>
               </div>
-
-              {/* Remove button */}
-              <button
-                onClick={() => removeFromCart(item.id)}
-                className="text-red-500 hover:text-red-700 font-semibold px-2 py-1 bg-red-50 rounded"
-              >
-                Delete
-              </button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {/* Bottom total amount and checkout button */}
-      <div className="mt-8 bg-gray-50 p-6 rounded shadow-sm flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Total: <span className="text-green-600">${cartTotal.toFixed(2)}</span>
-        </h2>
-        <button
-          onClick={handleCheckout}
-          className="bg-green-600 text-white px-8 py-3 rounded-lg text-lg font-bold hover:bg-green-700 transition"
-        >
-          Check out
-        </button>
+        <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-stone-100 flex justify-between items-center">
+          <h2 className="text-2xl font-bold text-slate-800">
+            合計: <span className="text-amber-600">¥{cartTotal.toFixed(2)}</span>
+          </h2>
+          <button
+            onClick={handleCheckout}
+            className="bg-amber-500 text-slate-900 px-8 py-3 rounded-lg text-lg font-bold hover:bg-amber-400 transition"
+          >
+            レジに進む
+          </button>
+        </div>
       </div>
     </div>
   );

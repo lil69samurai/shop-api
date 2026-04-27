@@ -26,7 +26,7 @@ const Navbar = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="text-xl font-extrabold text-amber-400 tracking-tight">
-            ⚔️ 武士の道
+            竹道 CHIKUDO
           </Link>
 
           <div className="hidden md:flex items-center gap-4">
@@ -37,7 +37,7 @@ const Navbar = () => {
             <Divider />
 
             <Link to="/cart" className="relative text-slate-300 hover:text-amber-400 font-medium transition">
-              買い物かご
+              買い物カート
               {cartItemCount > 0 && (
                 <span className="absolute -top-2 -right-5 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                   {cartItemCount}
@@ -64,7 +64,7 @@ const Navbar = () => {
                 <Divider />
 
                 <Link to="/profile" className="text-slate-400 hover:text-amber-400 transition">
-                  ⚔️ {user?.username}
+                  {user?.username}
                 </Link>
 
                 <Divider />
@@ -109,7 +109,7 @@ const Navbar = () => {
             <Link to="/products" onClick={closeMenu} className="block text-slate-300 hover:text-amber-400 font-medium">商品一覧</Link>
             <hr className="border-slate-700" />
             <Link to="/cart" onClick={closeMenu} className="block text-slate-300 hover:text-amber-400 font-medium">
-              買い物かご {cartItemCount > 0 && "(" + cartItemCount + ")"}
+              買い物カート {cartItemCount > 0 && "(" + cartItemCount + ")"}
             </Link>
             {isAuthenticated ? (
               <>
