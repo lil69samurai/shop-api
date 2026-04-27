@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import productApi from '../api/productApi';
-import categoryApi from '../api/categoryApi';
+import * as productApi from '../api/productApi';
+import * as categoryApi from '../api/categoryApi';
 import { getImageSrc } from '../utils/config';
 
 const AdminProductsPage = () => {

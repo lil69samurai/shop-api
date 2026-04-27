@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import orderApi from '../api/orderApi';
+import * as orderApi from '../api/orderApi';
 import { getImageSrc } from '../utils/config';
 
 const AdminOrdersPage = () => {

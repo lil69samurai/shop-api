@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import categoryApi from '../api/categoryApi';
+import * as categoryApi from '../api/categoryApi';
 
 const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState([]);
