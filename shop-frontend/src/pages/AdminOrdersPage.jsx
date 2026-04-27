@@ -16,7 +16,7 @@ const AdminOrdersPage = () => {
   const fetchOrders = async () => {
     try {
       const response = await orderApi.getAllOrdersApi();
-      setOrders(response.data || response || []);
+      const oData = response.content || response.data || response; setOrders(Array.isArray(oData) ? oData : []);
     } catch (error) {
       toast.error('無法載入訂單列表');
     } finally {

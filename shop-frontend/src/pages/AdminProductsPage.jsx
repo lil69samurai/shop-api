@@ -32,7 +32,7 @@ const AdminProductsPage = () => {
         (categoryApi.getAllCategoriesApi ? categoryApi.getAllCategoriesApi() : (categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getAllCategories()))
       ]);
       setProducts(prodRes.content || prodRes.content || prodRes.data || prodRes || []);
-      setCategories(catRes.data || catRes || []);
+      const cData = catRes.content || catRes.data || catRes; setCategories(Array.isArray(cData) ? cData : []);
     } catch (error) {
       toast.error('資料載入失敗');
     } finally {
