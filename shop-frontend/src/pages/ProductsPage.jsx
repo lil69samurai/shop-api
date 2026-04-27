@@ -95,138 +95,144 @@ const ProductsPage = () => {
   };
 
   if (loading && products.length === 0) {
-    return <div className="text-center mt-10 text-gray-500">Loading...</div>;
+    return <div className="text-center mt-10 text-stone-400">\u8aad\u307f\u8fbc\u307f\u4e2d...</div>;
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">What's Good</h1>
+    <div className="bg-stone-50 min-h-screen">
+      <div className="max-w-6xl mx-auto p-6">
+        <h1 className="text-2xl font-bold mb-6 text-slate-800">\u5546\u54c1\u4e00\u89a7</h1>
 
-      {/* Search and Filter */}
-      <div className="bg-gray-50 p-4 rounded-lg shadow-sm mb-6">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="flex-1 w-full">
-            <input
-              type="text"
-              placeholder="🔍 Search products by name..."
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              onKeyDown={handleKeyPress}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="w-full md:w-64">
-            <select
-              value={selectedCategory}
-              onChange={handleCategoryChange}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            onClick={handleSearch}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
-          >
-            Search
-          </button>
-          {(searchKeyword || selectedCategory) && (
+        {/* Search and Filter */}
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 mb-6">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex-1 w-full">
+              <input
+                type="text"
+                placeholder="\U0001f50d \u5546\u54c1\u540d\u3067\u691c\u7d22..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={handleKeyPress}
+                className="w-full border border-stone-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+            <div className="w-full md:w-64">
+              <select
+                value={selectedCategory}
+                onChange={handleCategoryChange}
+                className="w-full border border-stone-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              >
+                <option value="">\u3059\u3079\u3066\u306e\u30ab\u30c6\u30b4\u30ea\u30fc</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <button
-              onClick={handleClearFilters}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition whitespace-nowrap"
+              onClick={handleSearch}
+              className="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition whitespace-nowrap font-medium"
             >
-              ✕ Clear
+              \u691c\u7d22
             </button>
-          )}
+            {(searchKeyword || selectedCategory) && (
+              <button
+                onClick={handleClearFilters}
+                className="bg-stone-200 text-stone-700 px-4 py-2 rounded-lg hover:bg-stone-300 transition whitespace-nowrap"
+              >
+                \u2715 \u30af\u30ea\u30a2
+              </button>
+            )}
+          </div>
+          <p className="text-sm text-stone-400 mt-2">
+            {totalElements}\u4ef6\u4e2d {products.length}\u4ef6\u8868\u793a | \u30da\u30fc\u30b8 {currentPage + 1} / {totalPages || 1}
+          </p>
         </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Showing {products.length} of {totalElements} products | Page {currentPage + 1} of {totalPages || 1}
-        </p>
-      </div>
 
-      {/* Product List */}
-      {products.length === 0 ? (
-        <div className="text-center mt-10 p-6 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-lg">No products found.</p>
-          <button onClick={handleClearFilters} className="mt-4 text-blue-600 underline">
-            Clear filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {products.map((product) => (
-            <Link
-              to={`/products/${product.id}`}
-              key={product.id}
-              className="border rounded-lg p-4 hover:shadow-lg transition bg-white"
-            >
-              {product.imageUrl ? (
-                <img
-                  src={getImageSrc(product.imageUrl)}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded mb-3"
-                />
-              ) : (
-                <div className="w-full h-48 bg-gray-100 rounded mb-3 flex items-center justify-center text-gray-400">
-                  No Image
-                </div>
-              )}
-
-              <div className="flex justify-between items-start">
-                <h2 className="text-lg font-bold">{product.name}</h2>
-                {product.categoryName && (
-                  <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                    {product.categoryName}
-                  </span>
+        {/* Product List */}
+        {products.length === 0 ? (
+          <div className="text-center mt-10 p-6 bg-white rounded-xl shadow-sm">
+            <p className="text-stone-400 text-lg">\u5546\u54c1\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f\u3002</p>
+            <button onClick={handleClearFilters} className="mt-4 text-amber-600 underline">
+              \u30d5\u30a3\u30eb\u30bf\u30fc\u3092\u30af\u30ea\u30a2
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <Link
+                to={"/products/" + product.id}
+                key={product.id}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden group border border-stone-100"
+              >
+                {product.imageUrl ? (
+                  <div className="overflow-hidden">
+                    <img
+                      src={getImageSrc(product.imageUrl)}
+                      alt={product.name}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-48 bg-stone-100 rounded-t-xl flex items-center justify-center text-stone-400">
+                    No Image
+                  </div>
                 )}
-              </div>
-              <p className="text-gray-600 mt-1 text-sm">{product.description}</p>
-              <p className="text-green-600 font-semibold mt-2 text-lg">${product.price}</p>
-              <p className="text-sm text-gray-400 mt-1">
-                Stock: {product.stock ?? product.stockQuantity ?? "N/A"}
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex justify-center items-center gap-2">
-          <button
-            onClick={handlePreviousPage}
-            disabled={currentPage === 0}
-            className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            ← Prev
-          </button>
-          {getPageNumbers().map((page) => (
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <h2 className="text-lg font-bold text-slate-800">{product.name}</h2>
+                    {product.categoryName && (
+                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                        {product.categoryName}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-stone-500 mt-1 text-sm">{product.description}</p>
+                  <p className="text-amber-600 font-bold mt-2 text-lg">\u00a5{product.price}</p>
+                  <p className="text-sm text-stone-400 mt-1">
+                    \u5728\u5eab: {product.stock ?? product.stockQuantity ?? "N/A"}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center items-center gap-2">
             <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-4 py-2 border rounded-lg transition ${
-                currentPage === page
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "hover:bg-gray-100"
-              }`}
+              onClick={handlePreviousPage}
+              disabled={currentPage === 0}
+              className="px-4 py-2 border border-stone-200 rounded-lg hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {page + 1}
+              \u2190 \u524d\u3078
             </button>
-          ))}
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages - 1}
-            className="px-4 py-2 border rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        </div>
-      )}
+            {getPageNumbers().map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={"px-4 py-2 border rounded-lg transition " + (
+                  currentPage === page
+                    ? "bg-slate-800 text-white border-slate-800"
+                    : "border-stone-200 hover:bg-stone-100"
+                )}
+              >
+                {page + 1}
+              </button>
+            ))}
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages - 1}
+              className="px-4 py-2 border border-stone-200 rounded-lg hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              \u6b21\u3078 \u2192
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
