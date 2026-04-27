@@ -59,9 +59,17 @@ const AdminProductsPage = () => {
     setError("");
   };
 
+  const getImageSrc = (imageUrl) => {
+      if (!imageUrl) return null;
+      if (imageUrl.startsWith("http")) return imageUrl;
+      return (import.meta.env.VITE_API_URL || "") + imageUrl;
+    };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setUploading(true);
+
 
     const productData = {
       name: form.name,
@@ -72,29 +80,23 @@ const AdminProductsPage = () => {
     };
 
     try {
-      let savedProduct;
-      if (editingProduct) {
-        savedProduct = await updateProductApi(editingProduct.id, productData);
-      } else {
-        savedProduct = await createProductApi(productData);
-      }
+          if (editingProduct) {
+            await updateProductApi(editingProduct.id, productData, imageFile);
+          } else {
+            await createProductApi(productData, imageFile);
+          }
 
-      const productId = savedProduct?.data?.id || editingProduct?.id;
-      if (imageFile && productId) {
-        setUploading(true);
-        await uploadProductImageApi(productId, imageFile);
-        setUploading(false);
-      }
-
-      toast.success(editingProduct ? "Product updated!" : "Product created!");
-      resetForm();
-      setShowForm(false);
-      fetchData();
-    } catch (err) {
-      setError("Failed to save product");
-      console.error(err);
-    }
-  };
+          toast.success(editingProduct ? "Product updated!" : "Product created!");
+          resetForm();
+          setShowForm(false);
+          fetchData();
+        } catch (err) {
+          setError("Failed to save product");
+          console.error(err);
+        } finally {
+          setUploading(false);
+        }
+      };
 
   const handleImageUpload = async (productId) => {
     const input = document.createElement("input");
@@ -125,7 +127,7 @@ const AdminProductsPage = () => {
     });
     setEditingProduct(product);
     setImageFile(null);
-    setImagePreview((import.meta.env.VITE_API_URL || "http://localhost:8080") + product.imageUrl)
+    setImagePreview(getImageSrc(product.imageUrl));
     setShowForm(true);
   };
 
@@ -243,7 +245,7 @@ const AdminProductsPage = () => {
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="border p-2">
                   {product.imageUrl ? (
-                    <img src={"http://localhost:8080" + product.imageUrl} alt={product.name}
+                      <img src={getImageSrc(product.imageUrl)} alt={product.name}
                       className="w-16 h-16 object-cover rounded" />
                   ) : (
                     <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">

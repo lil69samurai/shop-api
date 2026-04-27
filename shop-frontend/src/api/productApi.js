@@ -12,13 +12,27 @@ export const getProductByIdApi = async (id) => {
   return response.data;
 };
 
-export const createProductApi = async (data) => {
-  const response = await api.post("/api/products", data);
+export const createProductApi = async (productData, imageFile) => {
+  const formData = new FormData();
+  formData.append("product", new Blob([JSON.stringify(productData)], { type: "application/json" }));
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+  const response = await api.post("/api/products", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return response.data;
 };
 
-export const updateProductApi = async (id, data) => {
-  const response = await api.put(`/api/products/${id}`, data);
+export const updateProductApi = async (id, productData, imageFile) => {
+  const formData = new FormData();
+  formData.append("product", new Blob([JSON.stringify(productData)], { type: "application/json" }));
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+  const response = await api.put(`/api/products/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return response.data;
 };
 
