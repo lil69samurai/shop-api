@@ -34,34 +34,16 @@ const AppRoutes = () => {
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
 
-        <Route path="/orders" element={
-                  <ProtectedRoute><OrdersPage /></ProtectedRoute>
-                } />
-                <Route path="/orders/create" element={
-                  <ProtectedRoute><CreateOrderPage /></ProtectedRoute>
-                } />
-                <Route path="/orders/:id" element={
-                  <ProtectedRoute><OrderDetailPage /></ProtectedRoute>
-                } />
-                <Route path="/profile" element={
-                    <ProtectedRoute><ProfilePage /></ProtectedRoute>
-                } />
+        <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
+        <Route path="/orders/create" element={<ProtectedRoute><CreateOrderPage /></ProtectedRoute>} />
+        <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-         <Route path="/admin" element={
-                   <AdminRoute><AdminDashboardPage /></AdminRoute>
-                 } />
-                 <Route path="/admin/products" element={
-                   <AdminRoute><AdminProductsPage /></AdminRoute>
-                 } />
-                 <Route path="/admin/categories" element={
-                   <AdminRoute><AdminCategoriesPage /></AdminRoute>
-                 } />
-                 <Route path="/admin/orders" element={
-                   <AdminRoute><AdminOrdersPage /></AdminRoute>
-                 } />
-                 <Route path="/admin/users" element={
-                   <AdminRoute><AdminUsersPage /></AdminRoute>
-                 } />
+        <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+        <Route path="/admin/products" element={<AdminRoute><AdminProductsPage /></AdminRoute>} />
+        <Route path="/admin/categories" element={<AdminRoute><AdminCategoriesPage /></AdminRoute>} />
+        <Route path="/admin/orders" element={<AdminRoute><AdminOrdersPage /></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

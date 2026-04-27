@@ -18,7 +18,7 @@ const AdminProductsPage = () => {
   const [imageFile, setImageFile] = useState(null);
   const [formData, setFormData] = useState({
     name: '', description: '', price: '', stock: '', categoryId: ''
-  });
+  */
 
   useEffect(() => {
     fetchData();
@@ -29,9 +29,9 @@ const AdminProductsPage = () => {
       setLoading(true);
       const [prodRes, catRes] = await Promise.all([
         productApi.getProductsApi(0, 100),
-        (categoryApi.getAllCategoriesApi ? categoryApi.getAllCategoriesApi() : (categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getAllCategories()))
+        (categoryApi.getAllCategoriesApi ? categoryApi.getAllCategoriesApi() : (categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getCategoriesApi ? categoryApi.getCategoriesApi() : categoryApi.getAllCategories()))
       ]);
-      setProducts(prodRes.content || prodRes.data || prodRes || []);
+      setProducts(prodRes.content || prodRes.content || prodRes.data || prodRes || []);
       setCategories(catRes.data || catRes || []);
     } catch (error) {
       toast.error('資料載入失敗');
@@ -49,7 +49,7 @@ const AdminProductsPage = () => {
   const openAddModal = () => {
     setIsEditing(false);
     setCurrentId(null);
-    setFormData({ name: '', description: '', price: '', stock: '', categoryId: categories.length > 0 ? categories[0].id : '' });
+    setFormData({ name: '', description: '', price: '', stock: '', categoryId: categories.length > 0 ? categories[0].id : '' */
     setImageFile(null);
     setShowEditModal(true);
   };
@@ -61,7 +61,7 @@ const AdminProductsPage = () => {
     setFormData({
       name: product.name, description: product.description, price: product.price, stock: product.stock,
       categoryId: product.category?.id || product.categoryId || ''
-    });
+    */
     setImageFile(null);
     setShowEditModal(true);
   };
@@ -74,7 +74,7 @@ const AdminProductsPage = () => {
     setFormData({
       name: product.name, description: product.description, price: product.price, stock: product.stock,
       categoryId: product.category?.id || product.categoryId || ''
-    });
+    */
     setImageFile(null);
     setShowImageModal(true);
   };

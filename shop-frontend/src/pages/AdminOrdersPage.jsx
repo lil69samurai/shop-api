@@ -41,7 +41,7 @@ const AdminOrdersPage = () => {
     setFetchingDetail(true);
     try {
       // 嘗試抓取完整的訂單明細
-      if (typeof orderApi.getOrderByIdApi === 'function') {
+      if (typeof orderApi.getOrderByIdApiApi === 'function') {
         const res = await orderApi.getOrderByIdApi(order.id);
         if (res && (res.data || res.id)) {
           setSelectedOrder(res.data || res);
