@@ -95,13 +95,13 @@ const ProductsPage = () => {
   };
 
   if (loading && products.length === 0) {
-    return <div className="text-center mt-10 text-stone-400">\u8aad\u307f\u8fbc\u307f\u4e2d...</div>;
+    return <div className="text-center mt-10 text-stone-400">読み込み中...</div>;
   }
 
   return (
     <div className="bg-stone-50 min-h-screen">
       <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6 text-slate-800">\u5546\u54c1\u4e00\u89a7</h1>
+        <h1 className="text-2xl font-bold mb-6 text-slate-800">商品一覧</h1>
 
         {/* Search and Filter */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-100 mb-6">
@@ -109,7 +109,7 @@ const ProductsPage = () => {
             <div className="flex-1 w-full">
               <input
                 type="text"
-                placeholder="\U0001f50d \u5546\u54c1\u540d\u3067\u691c\u7d22..."
+                placeholder="🔍 商品名で検索..."
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
                 onKeyDown={handleKeyPress}
@@ -122,7 +122,7 @@ const ProductsPage = () => {
                 onChange={handleCategoryChange}
                 className="w-full border border-stone-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               >
-                <option value="">\u3059\u3079\u3066\u306e\u30ab\u30c6\u30b4\u30ea\u30fc</option>
+                <option value="">すべてのカテゴリー</option>
                 {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
@@ -134,28 +134,28 @@ const ProductsPage = () => {
               onClick={handleSearch}
               className="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition whitespace-nowrap font-medium"
             >
-              \u691c\u7d22
+              検索
             </button>
             {(searchKeyword || selectedCategory) && (
               <button
                 onClick={handleClearFilters}
                 className="bg-stone-200 text-stone-700 px-4 py-2 rounded-lg hover:bg-stone-300 transition whitespace-nowrap"
               >
-                \u2715 \u30af\u30ea\u30a2
+                ✕ クリア
               </button>
             )}
           </div>
           <p className="text-sm text-stone-400 mt-2">
-            {totalElements}\u4ef6\u4e2d {products.length}\u4ef6\u8868\u793a | \u30da\u30fc\u30b8 {currentPage + 1} / {totalPages || 1}
+            {totalElements}件中 {products.length}件表示 | ページ {currentPage + 1} / {totalPages || 1}
           </p>
         </div>
 
         {/* Product List */}
         {products.length === 0 ? (
           <div className="text-center mt-10 p-6 bg-white rounded-xl shadow-sm">
-            <p className="text-stone-400 text-lg">\u5546\u54c1\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f\u3002</p>
+            <p className="text-stone-400 text-lg">商品が見つかりませんでした。</p>
             <button onClick={handleClearFilters} className="mt-4 text-amber-600 underline">
-              \u30d5\u30a3\u30eb\u30bf\u30fc\u3092\u30af\u30ea\u30a2
+              フィルターをクリア
             </button>
           </div>
         ) : (
@@ -190,9 +190,9 @@ const ProductsPage = () => {
                     )}
                   </div>
                   <p className="text-stone-500 mt-1 text-sm">{product.description}</p>
-                  <p className="text-amber-600 font-bold mt-2 text-lg">\u00a5{product.price}</p>
+                  <p className="text-amber-600 font-bold mt-2 text-lg">¥{product.price}</p>
                   <p className="text-sm text-stone-400 mt-1">
-                    \u5728\u5eab: {product.stock ?? product.stockQuantity ?? "N/A"}
+                    在庫: {product.stock ?? product.stockQuantity ?? "N/A"}
                   </p>
                 </div>
               </Link>
@@ -208,7 +208,7 @@ const ProductsPage = () => {
               disabled={currentPage === 0}
               className="px-4 py-2 border border-stone-200 rounded-lg hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              \u2190 \u524d\u3078
+              ← 前へ
             </button>
             {getPageNumbers().map((page) => (
               <button
@@ -228,7 +228,7 @@ const ProductsPage = () => {
               disabled={currentPage === totalPages - 1}
               className="px-4 py-2 border border-stone-200 rounded-lg hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              \u6b21\u3078 \u2192
+              次へ →
             </button>
           </div>
         )}
