@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getProductByIdApi } from "../api/productApi";
 import { useCart } from "../context/CartContext";
 import { toast } from 'react-toastify';
-import { API_BASE_URL } from "../utils/config";
+import { getImageSrc } from "../utils/config";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -49,7 +49,7 @@ const ProductDetailPage = () => {
       <div className="mt-6">
         {product.imageUrl ? (
             <img
-              src={API_BASE_URL + product.imageUrl}
+              src={getImageSrc(product.imageUrl)}
               alt={product.name}
               className="w-full max-h-96 object-cover rounded-lg mb-6"
             />

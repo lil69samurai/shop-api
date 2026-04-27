@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getProductsApi, deleteProductApi, createProductApi, updateProductApi, uploadProductImageApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
 import { toast } from "react-toastify";
+import { getImageSrc } from "../utils/config";
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -58,12 +59,6 @@ const AdminProductsPage = () => {
     setImagePreview(null);
     setError("");
   };
-
-  const getImageSrc = (imageUrl) => {
-      if (!imageUrl) return null;
-      if (imageUrl.startsWith("http")) return imageUrl;
-      return (import.meta.env.VITE_API_URL || "") + imageUrl;
-    };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

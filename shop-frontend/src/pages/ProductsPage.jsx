@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getProductsApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
-import { API_BASE_URL } from "../utils/config";
+import { getImageSrc } from "../utils/config";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -167,7 +167,7 @@ const ProductsPage = () => {
             >
               {product.imageUrl ? (
                 <img
-                  src={API_BASE_URL + product.imageUrl}
+                  src={getImageSrc(product.imageUrl)}
                   alt={product.name}
                   className="w-full h-48 object-cover rounded mb-3"
                 />
