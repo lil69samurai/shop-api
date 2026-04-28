@@ -18,7 +18,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User implements UserDetails{
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +30,11 @@ public class User implements UserDetails{
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
+
+    @Column(name = "google_id")
+    private String googleId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -47,32 +50,21 @@ public class User implements UserDetails{
             this.role = Role.ROLE_USER;
         }
     }
-    // ==========================================
-    // Spring Security Methods | セキュリティメソッド
-    // ==========================================
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Return user role | ユーザーのロールを返す
         return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
-    public boolean isAccountNonExpired() {
-        return true; // Account is not expired | アカウントは有効期限切れではありません
-    }
+    public boolean isAccountNonExpired() { return true; }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true; // Account is not locked | アカウントはロックされていません
-    }
+    public boolean isAccountNonLocked() { return true; }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true; // Password is not expired | パスワードは有効期限切れではありません
-    }
+    public boolean isCredentialsNonExpired() { return true; }
 
     @Override
-    public boolean isEnabled() {
-        return true; // Account is enabled | アカウントは有効です
-    }
+    public boolean isEnabled() { return true; }
 }

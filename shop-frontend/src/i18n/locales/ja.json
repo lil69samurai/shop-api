@@ -219,7 +219,9 @@
     "failed": "ログインに失敗しました。ユーザー名とパスワードを確認してください。",
     "noAccount": "アカウントをお持ちでない方は",
     "registerLink": "会員登録",
-    "guestBrowse": "ログインせずに商品を見る →"
+    "guestBrowse": "ログインせずに商品を見る →",
+    "googleFailed": "Googleログインに失敗しました",
+    "orDivider": "または"
   },
   "register": {
     "title": "新規登録",

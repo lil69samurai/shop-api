@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import { loginApi, registerApi, getMeApi } from "../api/authApi";
+import { loginApi, registerApi, getMeApi, googleLoginApi } from "../api/authApi";
 
 export const AuthContext = createContext();
 
@@ -31,17 +31,18 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = async (formData) => {
-    console.log("login() called with:", formData);
-
     const data = await loginApi(formData);
-    console.log("loginApi response:", data);
-
     const newToken = data.data.token;
-    console.log("token =", newToken);
-
     localStorage.setItem("token", newToken);
     setToken(newToken);
+    return data;
+  };
 
+  const googleLogin = async (credential) => {
+    const data = await googleLoginApi(credential);
+    const newToken = data.data.token;
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
     return data;
   };
 
@@ -66,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         user,
         loading,
         login,
+        googleLogin,
         register,
         logout,
         isAuthenticated: !!token,

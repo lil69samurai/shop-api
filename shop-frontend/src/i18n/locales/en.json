@@ -210,7 +210,9 @@
     "failed": "Login failed. Please check your credentials.",
     "noAccount": "Don't have an account?",
     "registerLink": "Register",
-    "guestBrowse": "Browse without login"
+    "guestBrowse": "Browse without login",
+    "googleFailed": "Google login failed",
+    "orDivider": "OR"
   },
   "register": {
     "title": "Register",

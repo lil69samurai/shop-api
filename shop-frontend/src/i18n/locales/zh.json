@@ -210,7 +210,9 @@
     "failed": "登入失敗，請確認帳號密碼。",
     "noAccount": "還沒有帳號？",
     "registerLink": "立即註冊",
-    "guestBrowse": "不登入，直接瀏覽商品"
+    "guestBrowse": "不登入，直接瀏覽商品",
+    "googleFailed": "Google 登入失敗",
+    "orDivider": "或"
   },
   "register": {
     "title": "註冊",

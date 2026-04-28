@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [error, setError] = useState("");
@@ -30,6 +30,64 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+
+  // Google Login callback
+  const handleGoogleResponse = async (response) => {
+    setError("");
+    setLoading(true);
+    try {
+      await googleLogin(response.credential);
+      navigate("/products");
+    } catch (err) {
+      console.error("Google login failed:", err);
+      setError(t("login.googleFailed") || "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initialize Google Sign-In button
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    const initGoogle = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+        });
+        const btnDiv = document.getElementById("google-signin-btn");
+        if (btnDiv) {
+          window.google.accounts.id.renderButton(btnDiv, {
+            theme: "outline",
+            size: "large",
+            width: "100%",
+            text: "signin_with",
+            shape: "rectangular",
+          });
+        }
+      }
+    };
+
+    // If GSI script already loaded
+    if (window.google?.accounts?.id) {
+      initGoogle();
+      return;
+    }
+
+    // Load GSI script
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = initGoogle;
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup: don't remove script (may be used by other components)
+    };
+  }, []);
 
   return (
     <div className="bg-stone-50 min-h-screen flex items-center justify-center px-6">
@@ -61,6 +119,20 @@ const LoginPage = () => {
                 {t("login.serverWait")}
               </div>
             )}
+
+            {/* Google Login Button */}
+            <div className="mb-4">
+              <div id="google-signin-btn" className="flex justify-center"></div>
+            </div>
+
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-stone-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-4 text-stone-400">{t("login.orDivider") || "OR"}</span>
+              </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
