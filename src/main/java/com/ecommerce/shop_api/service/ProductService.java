@@ -108,6 +108,16 @@ public class ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
+        // 收集多圖片 URL 陣列
+        java.util.List<String> imageUrls = new java.util.ArrayList<>();
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            for (com.ecommerce.shop_api.entity.ProductImage img : product.getImages()) {
+                imageUrls.add(img.getImageUrl());
+            }
+        } else if (product.getImageUrl() != null) {
+            imageUrls.add(product.getImageUrl());
+        }
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -115,6 +125,7 @@ public class ProductService {
                 .price(product.getPrice())
                 .stock(product.getStock())
                 .imageUrl(product.getImageUrl())
+                .imageUrls(imageUrls)
                 .status(product.getStatus().name())
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())

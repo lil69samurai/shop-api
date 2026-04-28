@@ -14,6 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ecommerce.shop_api.service.FileStorageService;
+import com.ecommerce.shop_api.repository.ProductImageRepository;
+import com.ecommerce.shop_api.entity.ProductImage;
+import com.ecommerce.shop_api.repository.ProductRepository;
+import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
 
@@ -25,6 +29,8 @@ public class ProductController {
 
     private final ProductService productService;
     private final FileStorageService fileStorageService;
+    private final ProductImageRepository productImageRepository;
+    private final ProductRepository productRepository;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
@@ -106,4 +112,45 @@ public class ProductController {
         ProductResponse response = productService.updateProductImage(id, imageUrl);
         return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
     }
+
+    // 多圖上傳 API (為單一商品新增多張圖片)
+    @PostMapping("/{id}/images")
+    public ResponseEntity<ApiResponse<ProductResponse>> uploadProductImages(
+            @PathVariable Long id,
+            @RequestParam("files") List<MultipartFile> files) {
+
+        com.ecommerce.shop_api.entity.Product product = productRepository.findById(id)
+                .orElseThrow(() -> new com.ecommerce.shop_api.exception.ResourceNotFoundException("Product not found: " + id));
+
+        int currentMax = product.getImages().size();
+        for (int i = 0; i < files.size(); i++) {
+            String imageUrl = fileStorageService.saveFile(files.get(i));
+            ProductImage img = ProductImage.builder()
+                    .product(product)
+                    .imageUrl(imageUrl)
+                    .sortOrder(currentMax + i)
+                    .build();
+            product.getImages().add(img);
+        }
+
+        // 如果主圖為空，設定第一張為主圖
+        if (product.getImageUrl() == null && !product.getImages().isEmpty()) {
+            product.setImageUrl(product.getImages().get(0).getImageUrl());
+        }
+
+        productRepository.save(product);
+        ProductResponse response = productService.getProductById(id);
+        return ResponseEntity.ok(ApiResponse.success("Images uploaded successfully", response));
+    }
+
+    // 刪除單張圖片
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<ApiResponse<String>> deleteProductImage(@PathVariable Long imageId) {
+        ProductImage img = productImageRepository.findById(imageId)
+                .orElseThrow(() -> new com.ecommerce.shop_api.exception.ResourceNotFoundException("Image not found: " + imageId));
+        try { fileStorageService.deleteFile(img.getImageUrl()); } catch (Exception e) {}
+        productImageRepository.delete(img);
+        return ResponseEntity.ok(ApiResponse.success("Image deleted", null));
+    }
+
 }

@@ -15,6 +15,7 @@ public class ProductResponse {
     private BigDecimal price;
     private Integer stock;
     private String imageUrl;
+    private java.util.List<String> imageUrls;
     private String status;
 
     private Long categoryId;

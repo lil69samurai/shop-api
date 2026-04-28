@@ -6,6 +6,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "products")
@@ -25,7 +27,6 @@ public class Product {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // About money always use BigDecimal，never use Double/Float.
     @Column(nullable = false)
     private BigDecimal price;
 
@@ -38,10 +39,15 @@ public class Product {
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
 
-    // Connect Category
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    // 多圖片關聯
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
+    @Builder.Default
+    private List<ProductImage> images = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -57,6 +63,7 @@ public class Product {
             this.status = ProductStatus.ACTIVE;
         }
     }
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
