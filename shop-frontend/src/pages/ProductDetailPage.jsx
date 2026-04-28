@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { getProductByIdApi } from "../api/productApi";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
-import { getImageSrc } from "../utils/config";
+import ImageCarousel from "../components/common/ImageCarousel";
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -48,20 +48,15 @@ const ProductDetailPage = () => {
 
         <div className="mt-6 bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
           <div className="md:flex">
+            {/* 左側：圖片幻燈片 */}
             <div className="md:w-1/2">
-              {product.imageUrl ? (
-                <img
-                  src={getImageSrc(product.imageUrl)}
-                  alt={product.name}
-                  className="w-full h-80 md:h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-80 md:h-full bg-stone-100 flex items-center justify-center text-stone-400 text-lg">
-                  画像なし
-                </div>
-              )}
+              <ImageCarousel
+                images={product.imageUrls || []}
+                mainImage={product.imageUrl || ''}
+              />
             </div>
 
+            {/* 右側：商品資訊 */}
             <div className="md:w-1/2 p-8">
               <div className="flex items-start justify-between">
                 <h1 className="text-2xl font-bold text-slate-800">{product.name}</h1>

@@ -49,3 +49,19 @@ export const uploadProductImageApi = async (id, file) => {
   });
   return response.data;
 };
+
+export const uploadProductImagesApi = async (id, files) => {
+  const formData = new FormData();
+  for (let i = 0; i < files.length; i++) {
+    formData.append("files", files[i]);
+  }
+  const response = await api.post("/api/products/" + id + "/images", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+export const deleteProductImageApi = async (imageId) => {
+  const response = await api.delete("/api/products/images/" + imageId);
+  return response.data;
+};
