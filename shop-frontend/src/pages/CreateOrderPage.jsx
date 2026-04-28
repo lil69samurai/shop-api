@@ -83,10 +83,15 @@ const CreateOrderPage = () => {
         paymentMethod: form.paymentMethod,
         note: form.note.trim(),
       };
-      await createOrderApi(orderData);
+      const res = await createOrderApi(orderData);
+      const orderId = res?.data?.id || res?.id;
       clearCart();
       toast.success("\u6CE8\u6587\u304C\u5B8C\u4E86\u3057\u307E\u3057\u305F");
-      navigate("/orders");
+      if (orderId) {
+        navigate("/orders/success/" + orderId);
+      } else {
+        navigate("/orders");
+      }
     } catch (err) {
       setError("\u6CE8\u6587\u306B\u5931\u6557\u3057\u307E\u3057\u305F\u3002\u3082\u3046\u4E00\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002");
       console.error("Create order failed", err);

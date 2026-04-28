@@ -9,6 +9,7 @@ import ProductDetailPage from "../pages/ProductDetailPage";
 import OrdersPage from "../pages/OrdersPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import CreateOrderPage from "../pages/CreateOrderPage";
+import OrderSuccessPage from "../pages/OrderSuccessPage";
 import AdminRoute from "../components/common/AdminRoute";
 import AdminDashboardPage from "../pages/AdminDashboardPage";
 import AdminProductsPage from "../pages/AdminProductsPage";
@@ -36,6 +37,7 @@ const AppRoutes = () => {
 
         <Route path="/orders" element={<ProtectedRoute><OrdersPage /></ProtectedRoute>} />
         <Route path="/orders/create" element={<ProtectedRoute><CreateOrderPage /></ProtectedRoute>} />
+        <Route path="/orders/success/:id" element={<ProtectedRoute><OrderSuccessPage /></ProtectedRoute>} />
         <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
