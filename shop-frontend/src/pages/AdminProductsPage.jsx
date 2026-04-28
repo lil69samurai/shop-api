@@ -170,7 +170,7 @@ const AdminProductsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {products.length === 0 ? (<tr><td colSpan="7" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}</td></tr>) : products.map(p => (
+              {products.length === 0 ? (<tr><td colSpan="7" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}</td></tr>) : products.map((p, index) => (
                 <tr key={p.id} className="border-b hover:bg-stone-50">
                   <td className="p-4">
                     <div className="w-16 h-16 bg-slate-200 rounded overflow-hidden">

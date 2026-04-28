@@ -25,7 +25,7 @@ const AdminCategoriesPage = () => {
       const res = await categoryApi.getCategoriesApi();
       setCategories(getArray(res));
     } catch (error) {
-      toast.error('無法載入分類');
+      toast.error('\u7121\u6CD5\u8F09\u5165\u5206\u985E');
     } finally { setLoading(false); }
   };
 
@@ -50,26 +50,26 @@ const AdminCategoriesPage = () => {
     try {
       if (isEditing) {
         await categoryApi.updateCategoryApi(currentId, formData);
-        toast.success('分類更新成功');
+        toast.success('\u5206\u985E\u66F4\u65B0\u6210\u529F');
       } else {
         await categoryApi.createCategoryApi(formData);
-        toast.success('分類新增成功');
+        toast.success('\u5206\u985E\u65B0\u589E\u6210\u529F');
       }
       setShowModal(false);
       fetchCategories();
     } catch (error) {
-      toast.error(isEditing ? '更新失敗' : '新增失敗');
+      toast.error(isEditing ? '\u66F4\u65B0\u5931\u6557' : '\u65B0\u589E\u5931\u6557');
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('確定刪除？若分類下有商品可能會失敗。')) {
+    if (window.confirm('\u78BA\u5B9A\u522A\u9664\uFF1F\u82E5\u5206\u985E\u4E0B\u6709\u5546\u54C1\u53EF\u80FD\u6703\u5931\u6557\u3002')) {
       try {
         await categoryApi.deleteCategoryApi(id);
-        toast.success('分類已刪除');
+        toast.success('\u5206\u985E\u5DF2\u522A\u9664');
         fetchCategories();
       } catch (error) {
-        toast.error('刪除失敗');
+        toast.error('\u522A\u9664\u5931\u6557');
       }
     }
   };
@@ -85,11 +85,11 @@ const AdminCategoriesPage = () => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-10 border-b-2 border-slate-800 pb-6 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-wider">分類管理</h1>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-wider">{"\u5206\u985E\u7BA1\u7406"}</h1>
             <p className="mt-2 text-sm text-amber-600 font-medium tracking-widest">CATEGORY MANAGEMENT</p>
           </div>
           <button onClick={openAddModal} className="bg-slate-900 text-stone-50 px-6 py-3 font-bold tracking-wider hover:bg-amber-600 transition-colors shadow-md">
-            新增分類
+            {"\u65B0\u589E\u5206\u985E"}
           </button>
         </div>
 
@@ -97,24 +97,28 @@ const AdminCategoriesPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-stone-50 uppercase text-xs tracking-widest">
-                <th className="p-4 w-16">ID</th>
-                <th className="p-4">分類名稱</th>
-                <th className="p-4">描述</th>
-                <th className="p-4 text-center w-32">操作</th>
+                <th className="p-4 w-16">{"\u5E8F\u865F"}</th>
+                <th className="p-4">{"\u5206\u985E\u540D\u7A31"}</th>
+                <th className="p-4">{"\u63CF\u8FF0"}</th>
+                <th className="p-4 w-40 text-center">{"\u64CD\u4F5C"}</th>
               </tr>
             </thead>
             <tbody className="text-slate-700">
               {categories.length === 0 ? (
-                <tr><td colSpan="4" className="p-8 text-center text-slate-500">尚無分類資料</td></tr>
+                <tr><td colSpan="4" className="p-8 text-center text-slate-500">{"\u5C1A\u7121\u5206\u985E\u8CC7\u6599"}</td></tr>
               ) : (
-                categories.map(cat => (
+                categories.map((cat, index) => (
                   <tr key={cat.id} className="border-b border-slate-100 hover:bg-stone-50 transition-colors">
-                    <td className="p-4 font-bold text-slate-400">#{cat.id}</td>
+                    <td className="p-4 font-bold text-slate-400">#{index + 1}</td>
                     <td className="p-4 font-bold text-slate-900">{cat.name}</td>
                     <td className="p-4 text-sm text-slate-500">{cat.description || '-'}</td>
-                    <td className="p-4 text-center space-x-2">
-                      <button onClick={() => openEditModal(cat)} className="text-xs font-bold px-3 py-1 bg-slate-200 text-slate-800 hover:bg-slate-300">編輯</button>
-                      <button onClick={() => handleDelete(cat.id)} className="text-xs font-bold px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200">刪除</button>
+                    <td className="p-4">
+                      <div className="flex items-center justify-center gap-2">
+                        <button onClick={() => openEditModal(cat)}
+                          className="text-xs font-bold px-4 py-1.5 bg-slate-200 text-slate-800 hover:bg-slate-300 rounded transition">{"\u7DE8\u8F2F"}</button>
+                        <button onClick={() => handleDelete(cat.id)}
+                          className="text-xs font-bold px-4 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded transition">{"\u522A\u9664"}</button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -123,28 +127,28 @@ const AdminCategoriesPage = () => {
           </table>
         </div>
 
-        {/* 新增/編輯 Modal */}
+        {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm">
-            <div className="bg-white w-full max-w-md shadow-2xl">
+            <div className="bg-white w-full max-w-md shadow-2xl rounded-lg overflow-hidden">
               <div className="bg-slate-900 text-stone-50 p-6 flex justify-between items-center">
-                <h2 className="text-xl font-bold">{isEditing ? '編輯分類' : '新增分類'}</h2>
-                <button onClick={() => setShowModal(false)} className="text-stone-400 hover:text-white text-2xl">✕</button>
+                <h2 className="text-xl font-bold">{isEditing ? '\u7DE8\u8F2F\u5206\u985E' : '\u65B0\u589E\u5206\u985E'}</h2>
+                <button onClick={() => setShowModal(false)} className="text-stone-400 hover:text-white text-2xl">{"\u2715"}</button>
               </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">分類名稱 <span className="text-red-500">*</span></label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">{"\u5206\u985E\u540D\u7A31"} <span className="text-red-500">*</span></label>
                   <input type="text" name="name" value={formData.name} onChange={handleInputChange} required
-                    className="w-full p-2 border border-slate-300 focus:border-amber-500 outline-none bg-stone-50" placeholder="例如：竹劍、劍道服..." />
+                    className="w-full p-2.5 border border-slate-300 rounded focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none bg-stone-50" placeholder={"\u4F8B\u5982\uFF1A\u7AF9\u528D\u3001\u5263\u9053\u670D..."} />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">分類描述</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">{"\u5206\u985E\u63CF\u8FF0"}</label>
                   <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3"
-                    className="w-full p-2 border border-slate-300 focus:border-amber-500 outline-none bg-stone-50"></textarea>
+                    className="w-full p-2.5 border border-slate-300 rounded focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none bg-stone-50"></textarea>
                 </div>
                 <div className="pt-4 flex justify-end gap-3 border-t border-slate-200">
-                  <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 font-bold text-slate-600 bg-slate-200 hover:bg-slate-300">取消</button>
-                  <button type="submit" className="px-6 py-2 font-bold text-white bg-amber-600 hover:bg-amber-700">{isEditing ? '儲存' : '新增'}</button>
+                  <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded">{"\u53D6\u6D88"}</button>
+                  <button type="submit" className="px-6 py-2 font-bold text-white bg-amber-600 hover:bg-amber-700 rounded">{isEditing ? '\u5132\u5B58' : '\u65B0\u589E'}</button>
                 </div>
               </form>
             </div>

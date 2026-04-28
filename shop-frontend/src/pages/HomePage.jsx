@@ -10,6 +10,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [heroImages, setHeroImages] = useState([]);
   const [currentHero, setCurrentHero] = useState(0);
+  const [categoryImages, setCategoryImages] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -19,14 +20,21 @@ const HomePage = () => {
         setFeaturedProducts(products.slice(0, 4));
 
         const imgs = [];
+        const catImgMap = {};
         products.forEach(p => {
           if (p.imageUrls && p.imageUrls.length > 0) {
             p.imageUrls.forEach(url => imgs.push(url));
           } else if (p.imageUrl) {
             imgs.push(p.imageUrl);
           }
+          // Collect first product image per category
+          const catId = p.categoryId || (p.category && p.category.id);
+          if (catId && !catImgMap[catId] && p.imageUrl) {
+            catImgMap[catId] = p.imageUrl;
+          }
         });
         setHeroImages(imgs.slice(0, 6));
+        setCategoryImages(catImgMap);
 
         try {
           const catData = await getCategoriesApi();

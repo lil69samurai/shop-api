@@ -94,11 +94,11 @@ const AdminOrdersPage = () => {
               {orders.length === 0 ? (
                 <tr><td colSpan="8" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u8A02\u55AE"}</td></tr>
               ) : (
-                orders.map(o => {
+                orders.map((o, index) => {
                   const pm = paymentMethodMap[o.paymentMethod];
                   return (
                     <tr key={o.id} className="border-b border-slate-100 hover:bg-amber-50 transition-colors">
-                      <td className="p-4 font-bold">#{o.id}</td>
+                      <td className="p-4 font-bold">#{index + 1}</td>
                       <td className="p-4 text-sm">{o.username || 'N/A'}</td>
                       <td className="p-4 text-sm">{o.recipientName || '-'}</td>
                       <td className="p-4 text-sm">{o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '-'}</td>
