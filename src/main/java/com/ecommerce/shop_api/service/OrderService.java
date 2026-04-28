@@ -19,14 +19,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+
+    // Allowed status transitions map
+    private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = new HashMap<>();
+    static {
+        ALLOWED_TRANSITIONS.put(OrderStatus.PENDING,    Set.of(OrderStatus.PAID, OrderStatus.CANCELLED));
+        ALLOWED_TRANSITIONS.put(OrderStatus.PAID,       Set.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED));
+        ALLOWED_TRANSITIONS.put(OrderStatus.SHIPPED,    Set.of(OrderStatus.DELIVERED));
+        ALLOWED_TRANSITIONS.put(OrderStatus.DELIVERED,  Set.of(OrderStatus.COMPLETED));
+        ALLOWED_TRANSITIONS.put(OrderStatus.COMPLETED,  Set.of()); // terminal state
+        ALLOWED_TRANSITIONS.put(OrderStatus.CANCELLED,  Set.of()); // terminal state
+    }
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request, User currentUser) {
@@ -115,7 +125,6 @@ public class OrderService {
         return mapToResponse(order);
     }
 
-
     @Transactional(readOnly = true)
     public OrderResponse getOrderByIdForAdmin(Long id) {
         Order order = orderRepository.findById(id)
@@ -157,6 +166,26 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Order not found | 注文が見つかりません: ID " + id
                 ));
+
+        OrderStatus currentStatus = order.getStatus();
+
+        // Validate status transition
+        Set<OrderStatus> allowed = ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Set.of());
+        if (!allowed.contains(newStatus)) {
+            throw new RuntimeException(
+                    "Invalid status transition | 無効なステータス遷移: " + currentStatus + " → " + newStatus +
+                    ". Allowed | 許可: " + allowed
+            );
+        }
+
+        // If cancelling, restore stock
+        if (newStatus == OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
 
         order.setStatus(newStatus);
         Order updated = orderRepository.save(order);

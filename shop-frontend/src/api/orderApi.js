@@ -15,6 +15,12 @@ export const getOrderByIdApi = async (id) => {
   return response.data;
 };
 
+// Admin 專用：不受訂單擁有者限制
+export const getOrderByIdForAdminApi = async (id) => {
+  const response = await api.get(`/api/orders/admin/${id}`);
+  return response.data;
+};
+
 export const createOrderApi = async (data) => {
   const response = await api.post("/api/orders", data);
   return response.data;
