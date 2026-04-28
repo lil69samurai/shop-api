@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../context/CartContext";
@@ -6,6 +8,7 @@ import { toast } from "react-toastify";
 
 const Navbar = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
+  const { t } = useTranslation();
   const { cartItemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -23,7 +26,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    toast.info("\u30ED\u30B0\u30A2\u30A6\u30C8\u3057\u307E\u3057\u305F");
+    toast.info(t("nav.logout") + " \u2714");
     setMobileMenuOpen(false);
   };
 
@@ -40,13 +43,15 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-extrabold text-amber-400 tracking-tight">{"\u7AF9\u9053"}</span>
+            <span className="text-xl font-extrabold text-amber-400 tracking-tight">\u7AF6\u9053</span>
             <span className="text-sm text-slate-500 font-medium hidden sm:block">CHIKUDO</span>
           </Link>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-5">
-            <Link to="/products" className={navLinkClass("/products")}>{"\u5546\u54C1\u4E00\u89A7"}</Link>
+            <LanguageSwitcher />
+            <div className="h-4 w-px bg-slate-700"></div>
+            <Link to="/products" className={navLinkClass("/products")}>{t("nav.products")}</Link>
 
             <div className="h-4 w-px bg-slate-700"></div>
 
@@ -64,13 +69,13 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 <div className="h-4 w-px bg-slate-700"></div>
-                <Link to="/orders" className={navLinkClass("/orders")}>{"\u6CE8\u6587\u5C65\u6B74"}</Link>
+                <Link to="/orders" className={navLinkClass("/orders")}>{t("nav.orders")}</Link>
 
                 {isAdmin && (
                   <>
                     <div className="h-4 w-px bg-slate-700"></div>
                     <Link to="/admin" className={"font-medium transition text-sm " + (isActive("/admin") ? "text-amber-300" : "text-amber-500 hover:text-amber-300")}>
-                      {"\u2699 \u7BA1\u7406"}
+                      {"\u2699 "}{t("nav.admin")}
                     </Link>
                   </>
                 )}
@@ -86,15 +91,15 @@ const Navbar = () => {
 
                 <button onClick={handleLogout}
                   className="text-slate-500 hover:text-red-400 transition text-sm font-medium ml-1">
-                  {"\u30ED\u30B0\u30A2\u30A6\u30C8"}
+                  {t("nav.logout")}
                 </button>
               </>
             ) : (
               <>
                 <div className="h-4 w-px bg-slate-700"></div>
-                <Link to="/login" className={navLinkClass("/login")}>{"\u30ED\u30B0\u30A4\u30F3"}</Link>
+                <Link to="/login" className={navLinkClass("/login")}>{t("nav.login")}</Link>
                 <Link to="/register" className="bg-amber-500 text-slate-900 px-4 py-1.5 rounded-lg hover:bg-amber-400 font-bold text-sm transition">
-                  {"\u4F1A\u54E1\u767B\u9332"}
+                  {t("nav.register")}
                 </Link>
               </>
             )}
@@ -128,24 +133,25 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-slate-700 py-4 space-y-1 animate-in">
-            <Link to="/products" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/products") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{"\u5546\u54C1\u4E00\u89A7"}</Link>
+            <div className="py-2 px-3"><LanguageSwitcher /></div>
+            <Link to="/products" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/products") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{t("nav.products")}</Link>
             {isAuthenticated ? (
               <>
-                <Link to="/orders" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/orders") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{"\u6CE8\u6587\u5C65\u6B74"}</Link>
+                <Link to="/orders" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/orders") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{t("nav.orders")}</Link>
                 <Link to="/profile" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/profile") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>
                   {"\u2694\uFE0F "}{user?.username}
                 </Link>
                 {isAdmin && (
-                  <Link to="/admin" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/admin") ? "bg-slate-800 text-amber-300" : "text-amber-500 hover:bg-slate-800")}>{"\u2699 \u7BA1\u7406\u30C0\u30C3\u30B7\u30E5\u30DC\u30FC\u30C9"}</Link>
+                  <Link to="/admin" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/admin") ? "bg-slate-800 text-amber-300" : "text-amber-500 hover:bg-slate-800")}>{"\u2699 "}{t("nav.admin")}</Link>
                 )}
                 <div className="pt-2 mt-2 border-t border-slate-700">
-                  <button onClick={handleLogout} className="block w-full text-left py-2 px-3 rounded-lg text-red-400 hover:bg-red-900/30 font-medium">{"\u30ED\u30B0\u30A2\u30A6\u30C8"}</button>
+                  <button onClick={handleLogout} className="block w-full text-left py-2 px-3 rounded-lg text-red-400 hover:bg-red-900/30 font-medium">{t("nav.logout")}</button>
                 </div>
               </>
             ) : (
               <>
-                <Link to="/login" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/login") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{"\u30ED\u30B0\u30A4\u30F3"}</Link>
-                <Link to="/register" className="block py-2 px-3 rounded-lg font-bold text-amber-400 hover:bg-slate-800">{"\u4F1A\u54E1\u767B\u9332"}</Link>
+                <Link to="/login" className={"block py-2 px-3 rounded-lg font-medium " + (isActive("/login") ? "bg-slate-800 text-amber-400" : "text-slate-300 hover:bg-slate-800")}>{t("nav.login")}</Link>
+                <Link to="/register" className="block py-2 px-3 rounded-lg font-bold text-amber-400 hover:bg-slate-800">{t("nav.register")}</Link>
               </>
             )}
           </div>

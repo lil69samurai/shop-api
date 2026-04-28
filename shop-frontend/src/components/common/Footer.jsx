@@ -1,38 +1,40 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-slate-900 text-stone-300 py-12 border-t-4 border-amber-500 font-sans mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          
+
           {/* Brand Info */}
           <div>
             <h3 className="text-2xl font-bold text-white tracking-widest mb-4">
-              剣道ショップ
+              {t("footer.brand")}
             </h3>
             <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-              提供最高品質的劍道護具、竹劍與服裝。致力於推廣劍道文化，為每一位劍士提供最可靠的裝備。
+              {t("footer.brandDesc")}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h4 className="text-lg font-bold text-white mb-4 uppercase tracking-widest">
-              Quick Links
+              {t("footer.quickLinks")}
             </h4>
             <ul className="space-y-2 text-sm font-medium">
-              <li><Link to="/" className="hover:text-amber-500 transition-colors">首頁 (Home)</Link></li>
-              <li><Link to="/products" className="hover:text-amber-500 transition-colors">所有商品 (Products)</Link></li>
-              <li><Link to="/login" className="hover:text-amber-500 transition-colors">會員登入 (Login)</Link></li>
+              <li><Link to="/" className="hover:text-amber-500 transition-colors">{t("common.backToHome")}</Link></li>
+              <li><Link to="/products" className="hover:text-amber-500 transition-colors">{t("nav.products")}</Link></li>
+              <li><Link to="/login" className="hover:text-amber-500 transition-colors">{t("nav.login")}</Link></li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
             <h4 className="text-lg font-bold text-white mb-4 uppercase tracking-widest">
-              Contact Us
+              {t("footer.contact")}
             </h4>
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
@@ -48,7 +50,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-slate-700 text-center text-xs text-slate-500 tracking-widest">
-          &copy; {new Date().getFullYear()} KENDO SHOP. All rights reserved.
+          &copy; {new Date().getFullYear()} KENDO SHOP. {t("footer.rights")}
         </div>
       </div>
     </footer>
