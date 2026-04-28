@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { getProductsApi } from "../api/productApi";
 import { getImageSrc } from "../utils/config";
@@ -6,12 +6,26 @@ import { getImageSrc } from "../utils/config";
 const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [heroImages, setHeroImages] = useState([]);
+  const [currentHero, setCurrentHero] = useState(0);
 
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const data = await getProductsApi(0, 4);
-        setFeaturedProducts(data.data.content || []);
+        const data = await getProductsApi(0, 8);
+        const products = data.data?.content || data.content || [];
+        setFeaturedProducts(products.slice(0, 4));
+
+        // 收集所有有圖片的商品作為 Hero 輪播素材
+        const imgs = [];
+        products.forEach(p => {
+          if (p.imageUrls && p.imageUrls.length > 0) {
+            p.imageUrls.forEach(url => imgs.push(url));
+          } else if (p.imageUrl) {
+            imgs.push(p.imageUrl);
+          }
+        });
+        setHeroImages(imgs.slice(0, 6)); // 最多取 6 張
       } catch (err) {
         console.error("Failed to fetch featured products", err);
       } finally {
@@ -21,18 +35,52 @@ const HomePage = () => {
     fetchFeatured();
   }, []);
 
+  // 自動輪播計時器
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentHero(prev => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroImages]);
+
   return (
     <div className="bg-stone-50">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-b from-slate-900 to-slate-800 text-white">
-        <div className="max-w-6xl mx-auto px-6 py-24 text-center">
+      {/* Hero Section with Image Carousel Background */}
+      <div className="relative h-[500px] md:h-[600px] overflow-hidden">
+        
+        {/* 背景圖片層（多張疊加，透過 opacity 切換） */}
+        {heroImages.length > 0 ? (
+          heroImages.map((img, idx) => (
+            <div
+              key={idx}
+              className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+              style={{ opacity: idx === currentHero ? 1 : 0 }}
+            >
+              <img
+                src={getImageSrc(img)}
+                alt={"Hero " + (idx + 1)}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ))
+        ) : (
+          /* 沒有圖片時的漸層背景降級方案 */
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800"></div>
+        )}
+
+        {/* 深色遮罩（確保文字可讀） */}
+        <div className="absolute inset-0 bg-slate-900 bg-opacity-60"></div>
+
+        {/* 文字內容 */}
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
           <p className="text-amber-400 text-sm font-medium tracking-widest mb-4">
             ── 剣道具専門店 ──
           </p>
-          <h1 className="text-5xl font-extrabold mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">
             武士の道
           </h1>
-          <p className="text-lg text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-slate-200 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow">
             一つ一つ、心を込めた剣道具を。初心者から上級者まで、あなたの稽古を支える逸品をお届けします。
           </p>
           <div className="flex gap-4 justify-center">
@@ -44,11 +92,25 @@ const HomePage = () => {
             </Link>
             <Link
               to="/register"
-              className="border-2 border-slate-400 text-slate-300 font-semibold px-8 py-3 rounded-lg text-lg hover:bg-slate-700 hover:text-white transition"
+              className="border-2 border-white text-white font-semibold px-8 py-3 rounded-lg text-lg hover:bg-white hover:text-slate-900 transition"
             >
               会員登録
             </Link>
           </div>
+
+          {/* 輪播指示器（有多張圖片時才顯示） */}
+          {heroImages.length > 1 && (
+            <div className="flex gap-2 mt-8">
+              {heroImages.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentHero(idx)}
+                  className={"w-3 h-3 rounded-full transition-all " +
+                    (idx === currentHero ? "bg-amber-500 scale-125" : "bg-white bg-opacity-40 hover:bg-opacity-70")}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
