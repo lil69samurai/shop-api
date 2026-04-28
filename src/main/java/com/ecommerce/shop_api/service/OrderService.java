@@ -109,6 +109,16 @@ public class OrderService {
         return mapToResponse(order);
     }
 
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrderByIdForAdmin(Long id) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found | 注文が見つかりません: ID " + id
+                ));
+        return mapToResponse(order);
+    }
+
     @Transactional
     public void deleteOrder(Long id, User currentUser) {
         Order order = orderRepository.findById(id)
