@@ -67,6 +67,12 @@ public class OrderService {
                 .user(currentUser)
                 .status(OrderStatus.PENDING)
                 .totalAmount(totalAmount)
+                .recipientName(request.getRecipientName())
+                .phone(request.getPhone())
+                .zipCode(request.getZipCode())
+                .address(request.getAddress())
+                .paymentMethod(request.getPaymentMethod())
+                .note(request.getNote())
                 .build();
 
         for (OrderItem item : orderItems) {
@@ -177,6 +183,12 @@ public class OrderService {
                 .status(order.getStatus().name())
                 .totalAmount(order.getTotalAmount())
                 .items(itemResponses)
+                .recipientName(order.getRecipientName())
+                .phone(order.getPhone())
+                .zipCode(order.getZipCode())
+                .address(order.getAddress())
+                .paymentMethod(order.getPaymentMethod())
+                .note(order.getNote())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();

@@ -16,6 +16,15 @@ public class OrderResponse {
     private String username;
     private BigDecimal totalAmount;
     private List<OrderItemResponse> items;
+
+    // Shipping info
+    private String recipientName;
+    private String phone;
+    private String zipCode;
+    private String address;
+    private String paymentMethod;
+    private String note;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

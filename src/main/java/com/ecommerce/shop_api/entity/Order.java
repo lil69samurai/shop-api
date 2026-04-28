@@ -38,6 +38,24 @@ public class Order {
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 
+    @Column(name = "recipient_name", length = 100)
+    private String recipientName;
+
+    @Column(name = "phone", length = 30)
+    private String phone;
+
+    @Column(name = "zip_code", length = 10)
+    private String zipCode;
+
+    @Column(name = "address", length = 500)
+    private String address;
+
+    @Column(name = "payment_method", length = 30)
+    private String paymentMethod;
+
+    @Column(name = "note", length = 500)
+    private String note;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
