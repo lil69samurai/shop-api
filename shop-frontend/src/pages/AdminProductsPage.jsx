@@ -109,16 +109,23 @@ const AdminProductsPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-stone-50 text-xs tracking-widest">
-                <th className="p-4">圖片</th><th className="p-4">名稱</th><th className="p-4">分類</th><th className="p-4">價格</th><th className="p-4">圖片數</th><th className="p-4">操作</th>
+                <th className="p-4">圖片</th><th className="p-4">名稱</th><th className="p-4">分類</th><th className="p-4">價格</th><th className="p-4">庫存</th><th className="p-4">圖片數</th><th className="p-4">操作</th>
               </tr>
             </thead>
             <tbody>
-              {products.map(p => (
+              {products.length === 0 ? (<tr><td colSpan="8" className="p-8 text-center text-slate-400">尚無商品、請新增商品</td></tr>) : products.map(p => (
                 <tr key={p.id} className="border-b hover:bg-stone-50">
                   <td className="p-4"><div className="w-16 h-16 bg-slate-200">{p.imageUrl && <img src={getImageSrc(p.imageUrl)} className="w-full h-full object-cover"/>}</div></td>
                   <td className="p-4 font-bold">{p.name}</td>
                   <td className="p-4 text-sm">{p.categoryName || '無'}</td>
-                  <td className="p-4 font-bold text-amber-600">${p.price}</td>
+                  <td className="p-4 font-bold text-amber-600">{"¥"}{Number(p.price).toLocaleString()}</td>
+                  <td className="p-4 text-sm">
+                    {(p.stock ?? p.stockQuantity ?? 0) > 0 ? (
+                      <span className="text-green-600 font-bold">{p.stock ?? p.stockQuantity ?? 0}</span>
+                    ) : (
+                      <span className="text-red-500 font-bold">已售罄</span>
+                    )}
+                  </td>
                   <td className="p-4 text-sm">
                     <span className="bg-slate-100 px-2 py-1 text-xs font-bold">
                       {p.imageUrls ? p.imageUrls.length : (p.imageUrl ? 1 : 0)} 張
