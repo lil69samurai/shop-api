@@ -1,6 +1,6 @@
 {
   "nav": {
-    "brand": "Kendo Equipment",
+    "brand": "CHIKUDO",
     "products": "Products",
     "cart": "Cart",
     "orders": "Orders",
@@ -8,7 +8,8 @@
     "admin": "Admin",
     "login": "Login",
     "logout": "Logout",
-    "register": "Register"
+    "register": "Register",
+    "brandSub": "Kendo Store"
   },
   "home": {
     "hero": "Master the Way of the Sword",

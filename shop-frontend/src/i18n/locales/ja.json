@@ -7,7 +7,9 @@
     "login": "ログイン",
     "register": "会員登録",
     "logout": "ログアウト",
-    "profile": "マイページ"
+    "profile": "マイページ",
+    "brand": "竹道",
+    "brandSub": "CHIKUDO"
   },
   "home": {
     "subtitle": "── 剣道具専門店 ──",
@@ -54,7 +56,8 @@
     "catTitle": "カテゴリーから探す",
     "catDesc": "お探しの剣道具をカテゴリー別に",
     "soldOut": "売り切れ",
-    "ctaButton": "今すぐ登録"
+    "ctaButton": "今すぐ登録",
+    "shopNow": "商品を見る"
   },
   "products": {
     "title": "商品一覧",

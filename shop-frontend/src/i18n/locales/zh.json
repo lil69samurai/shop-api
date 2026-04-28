@@ -1,6 +1,6 @@
 {
   "nav": {
-    "brand": "劍道具專門店",
+    "brand": "竹道",
     "products": "商品列表",
     "cart": "購物車",
     "orders": "訂單紀錄",
@@ -8,7 +8,8 @@
     "admin": "管理",
     "login": "登入",
     "logout": "登出",
-    "register": "註冊"
+    "register": "註冊",
+    "brandSub": "CHIKUDO"
   },
   "home": {
     "hero": "精通劍之道",

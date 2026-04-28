@@ -43,8 +43,8 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl font-extrabold text-amber-400 tracking-tight">\u7AF6\u9053</span>
-            <span className="text-sm text-slate-500 font-medium hidden sm:block">CHIKUDO</span>
+            <span className="text-xl font-extrabold text-amber-400 tracking-tight">{t("nav.brand")}</span>
+            <span className="text-sm text-slate-500 font-medium hidden sm:block">{t("nav.brandSub")}</span>
           </Link>
 
           {/* Desktop Nav */}
