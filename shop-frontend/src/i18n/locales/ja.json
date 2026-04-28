@@ -109,7 +109,8 @@
     "minPrice": "最低価格",
     "maxPrice": "最高価格",
     "applyPrice": "適用",
-    "noResults": "商品が見つかりませんでした"
+    "noResults": "商品が見つかりませんでした",
+    "addToCart": "カートに入れる"
   },
   "cart": {
     "title": "買い物かご",
