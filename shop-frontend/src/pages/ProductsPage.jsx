@@ -180,10 +180,10 @@ const ProductsPage = () => {
                 {product.imageUrl ? (
                   <div className="overflow-hidden">
                     <img src={getImageSrc(product.imageUrl)} alt={product.name}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                      className="w-full aspect-square object-cover group-hover:scale-105 transition-transform duration-300" />
                   </div>
                 ) : (
-                  <div className="w-full h-48 bg-stone-100 flex items-center justify-center text-stone-300">
+                  <div className="w-full aspect-square bg-stone-100 flex items-center justify-center text-stone-300">
                     <div className="text-center">
                       <div className="text-4xl mb-1">{"\uD83D\uDDBC\uFE0F"}</div>
                       <p className="text-xs">No Image</p>

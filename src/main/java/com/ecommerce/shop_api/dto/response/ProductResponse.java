@@ -16,6 +16,7 @@ public class ProductResponse {
     private Integer stock;
     private String imageUrl;
     private java.util.List<String> imageUrls;
+    private java.util.List<Long> imageIds;
     private String status;
 
     private Long categoryId;
