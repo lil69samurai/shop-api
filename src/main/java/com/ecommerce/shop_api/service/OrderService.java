@@ -28,28 +28,17 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
 
-    // =====================================================
-    // Create Order | 注文を作成する
-    // This is the most critical method - stock check + deduct
-    // これが最も重要なメソッドです - 在庫確認と在庫減算
-    // =====================================================
     @Transactional
     public OrderResponse createOrder(OrderRequest request, User currentUser) {
-
         List<OrderItem> orderItems = new ArrayList<>();
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // Step 1: Loop through each item in the request | リクエストの各商品をループする
         for (OrderItemRequest itemRequest : request.getItems()) {
-
-            // Step 2: Find the product | 商品を検索する
             Product product = productRepository.findById(itemRequest.getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found | 商品が見つかりません: ID " + itemRequest.getProductId()
                     ));
 
-            // Step 3: Check if stock is sufficient | 在庫が十分かどうか確認する
-            // This is the KEY business logic! | これが重要なビジネスロジックです！
             if (product.getStock() < itemRequest.getQuantity()) {
                 throw new RuntimeException(
                         "Insufficient stock for product | 商品の在庫が不足しています: " + product.getName() +
@@ -58,33 +47,28 @@ public class OrderService {
                 );
             }
 
-            // Step 4: Deduct stock | 在庫を減らす
             product.setStock(product.getStock() - itemRequest.getQuantity());
             productRepository.save(product);
 
-            // Step 5: Calculate subtotal | 小計を計算する
             BigDecimal subtotal = product.getPrice()
                     .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
             totalAmount = totalAmount.add(subtotal);
 
-            // Step 6: Build order item | 注文明細を作成する
             OrderItem orderItem = OrderItem.builder()
                     .product(product)
                     .quantity(itemRequest.getQuantity())
-                    .priceAtPurchase(product.getPrice()) // Save price at this moment | この時点の価格を保存する
+                    .priceAtPurchase(product.getPrice())
                     .build();
 
             orderItems.add(orderItem);
         }
 
-        // Step 7: Build and save the order | 注文を作成して保存する
         Order order = Order.builder()
                 .user(currentUser)
                 .status(OrderStatus.PENDING)
                 .totalAmount(totalAmount)
                 .build();
 
-        // Step 8: Link items to order | 明細を注文に紐付ける
         for (OrderItem item : orderItems) {
             item.setOrder(order);
             order.getItems().add(item);
@@ -94,21 +78,18 @@ public class OrderService {
         return mapToResponse(saved);
     }
 
-    // Get ALL orders (Admin only)
     @Transactional(readOnly = true)
     public Page<OrderResponse> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable)
                 .map(this::mapToResponse);
     }
 
-    // Get all orders for current user | 現在のユーザーの全注文を取得する
     @Transactional(readOnly = true)
     public Page<OrderResponse> getMyOrders(User currentUser, Pageable pageable) {
         return orderRepository.findByUserId(currentUser.getId(), pageable)
                 .map(this::mapToResponse);
     }
 
-    // Get single order by ID | IDで注文を取得する
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id, User currentUser) {
         Order order = orderRepository.findById(id)
@@ -116,9 +97,10 @@ public class OrderService {
                         "Order not found | 注文が見つかりません: ID " + id
                 ));
 
-        // Security check: make sure the order belongs to current user
-        // セキュリティチェック：注文が現在のユーザーのものであることを確認する
-        if (!order.getUser().getId().equals(currentUser.getId())) {
+        boolean isAdmin = currentUser.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+
+        if (!isAdmin && !order.getUser().getId().equals(currentUser.getId())) {
             throw new ResourceNotFoundException(
                     "Order not found | 注文が見つかりません: ID " + id
             );
@@ -127,7 +109,6 @@ public class OrderService {
         return mapToResponse(order);
     }
 
-    // Delete/Cancel order (User can only cancel PENDING orders)
     @Transactional
     public void deleteOrder(Long id, User currentUser) {
         Order order = orderRepository.findById(id)
@@ -135,30 +116,25 @@ public class OrderService {
                         "Order not found: ID " + id
                 ));
 
-        // Check if the order belongs to current user
         if (!order.getUser().getId().equals(currentUser.getId())) {
             throw new ResourceNotFoundException("Order not found: ID " + id);
         }
 
-        // Only PENDING orders can be cancelled
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new RuntimeException(
                     "Cannot cancel order. Only PENDING orders can be cancelled. Current status: " + order.getStatus()
             );
         }
 
-        // Restore stock
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             product.setStock(product.getStock() + item.getQuantity());
             productRepository.save(product);
         }
 
-        // Delete the order
         orderRepository.delete(order);
     }
 
-    // Update order status (Admin only) | 注文ステータスを更新する（管理者のみ）
     @Transactional
     public OrderResponse updateOrderStatus(Long id, OrderStatus newStatus) {
         Order order = orderRepository.findById(id)
@@ -166,16 +142,11 @@ public class OrderService {
                         "Order not found | 注文が見つかりません: ID " + id
                 ));
 
-        // Update status | ステータスを更新する
         order.setStatus(newStatus);
         Order updated = orderRepository.save(order);
         return mapToResponse(updated);
     }
 
-    // =====================================================
-    // Helper: Map Entity to Response DTO
-    // エンティティをレスポンスDTOに変換する
-    // =====================================================
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
@@ -200,5 +171,4 @@ public class OrderService {
                 .updatedAt(order.getUpdatedAt())
                 .build();
     }
-
 }
