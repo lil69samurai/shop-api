@@ -145,7 +145,27 @@
     "processing": "處理中...",
     "emptyCart": "購物車是空的",
     "emptyCartDesc": "請先選擇商品",
-    "orderFailed": "下單失敗，請重試。"
+    "orderFailed": "下單失敗，請重試。",
+    "nameRequired": "請輸入姓名",
+    "phoneRequired": "請輸入電話號碼",
+    "phoneInvalid": "請輸入正確的電話號碼",
+    "zipRequired": "請輸入郵遞區號",
+    "zipInvalid": "郵遞區號格式: 000-0000",
+    "addressRequired": "請輸入地址",
+    "paymentRequired": "請選擇付款方式",
+    "orderSuccess": "訂單已完成",
+    "namePh2": "例: 王大明",
+    "addressPh2": "例: 台北市信義區...",
+    "notePh2": "配送相關要求",
+    "confirmTitle": "確認訂單內容",
+    "nameLabel": "姓名",
+    "phoneLabel": "電話",
+    "zipLabel": "郵遞區號",
+    "addressLabel": "地址",
+    "noteLabel": "備註",
+    "orderDate": "訂單日期",
+    "orderNum": "訂單",
+    "backToOrders": "回到訂單紀錄"
   },
   "orderSuccess": {
     "title": "感謝您的訂購",
@@ -168,7 +188,13 @@
     "cancel": "取消",
     "cancelConfirm": "確定要取消這筆訂單嗎？",
     "cancelled": "訂單已取消",
-    "cancelFailed": "取消失敗。只有處理中的訂單可以取消。"
+    "cancelFailed": "取消失敗。只有處理中的訂單可以取消。",
+    "loadingOrders": "載入訂單中...",
+    "emptyTitle": "尚無訂單紀錄",
+    "emptySubtitle": "快去找您喜歡的商品吧",
+    "orderNotFound": "找不到訂單",
+    "other": "其他",
+    "items": "件"
   },
   "login": {
     "title": "登入",
@@ -235,7 +261,10 @@
     "pwChanged": "密碼已變更",
     "pwFailed": "密碼變更失敗",
     "admin": "管理員",
-    "user": "一般會員"
+    "user": "一般會員",
+    "totalSpentLabel": "累計消費",
+    "noOrdersYet": "尚無訂單",
+    "confirmPwLabel": "確認新密碼"
   },
   "status": {
     "PENDING": "處理中",

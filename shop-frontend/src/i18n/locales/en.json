@@ -145,7 +145,27 @@
     "processing": "Processing...",
     "emptyCart": "Cart is empty",
     "emptyCartDesc": "Please add items first",
-    "orderFailed": "Order failed. Please try again."
+    "orderFailed": "Order failed. Please try again.",
+    "nameRequired": "Please enter your name",
+    "phoneRequired": "Please enter phone number",
+    "phoneInvalid": "Please enter a valid phone number",
+    "zipRequired": "Please enter zip code",
+    "zipInvalid": "Zip code format: 000-0000",
+    "addressRequired": "Please enter address",
+    "paymentRequired": "Please select a payment method",
+    "orderSuccess": "Order completed",
+    "namePh2": "e.g. Taro Yamada",
+    "addressPh2": "e.g. 1-2-3 Shibuya, Tokyo",
+    "notePh2": "Delivery requests",
+    "confirmTitle": "Confirm Order Details",
+    "nameLabel": "Name",
+    "phoneLabel": "Phone",
+    "zipLabel": "Zip Code",
+    "addressLabel": "Address",
+    "noteLabel": "Note",
+    "orderDate": "Order Date",
+    "orderNum": "Order",
+    "backToOrders": "Back to orders"
   },
   "orderSuccess": {
     "title": "Thank You for Your Order",
@@ -168,7 +188,13 @@
     "cancel": "Cancel",
     "cancelConfirm": "Are you sure you want to cancel this order?",
     "cancelled": "Order cancelled",
-    "cancelFailed": "Cancel failed. Only pending orders can be cancelled."
+    "cancelFailed": "Cancel failed. Only pending orders can be cancelled.",
+    "loadingOrders": "Loading orders...",
+    "emptyTitle": "No orders yet",
+    "emptySubtitle": "Find something you love",
+    "orderNotFound": "Order not found",
+    "other": "more",
+    "items": "items"
   },
   "login": {
     "title": "Login",
@@ -235,7 +261,10 @@
     "pwChanged": "Password changed successfully",
     "pwFailed": "Failed to change password",
     "admin": "Admin",
-    "user": "Member"
+    "user": "Member",
+    "totalSpentLabel": "Total Spent",
+    "noOrdersYet": "No orders yet",
+    "confirmPwLabel": "Confirm New Password"
   },
   "status": {
     "PENDING": "Pending",
