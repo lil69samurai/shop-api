@@ -94,7 +94,12 @@
     "shipping2d": "Card / Transfer / COD",
     "shipping3": "Expert Support",
     "shipping3d": "Feel free to ask",
-    "related": "Related Products"
+    "related": "Related Products",
+    "priceRange": "Price Range",
+    "priceRangeLabel": "Price Range",
+    "minPrice": "Min",
+    "maxPrice": "Max",
+    "applyPrice": "Apply"
   },
   "cart": {
     "title": "Shopping Cart",

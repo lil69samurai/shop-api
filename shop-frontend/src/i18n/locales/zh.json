@@ -94,7 +94,12 @@
     "shipping2d": "信用卡/轉帳/貨到付款",
     "shipping3": "專業客服",
     "shipping3d": "歡迎隨時諮詢",
-    "related": "相關商品"
+    "related": "相關商品",
+    "priceRange": "價格區間",
+    "priceRangeLabel": "價格範圍",
+    "minPrice": "最低價",
+    "maxPrice": "最高價",
+    "applyPrice": "套用"
   },
   "cart": {
     "title": "購物車",

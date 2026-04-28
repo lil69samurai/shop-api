@@ -1,10 +1,15 @@
 import api from "./axios";
 
-export const getProductsApi = async (page = 0, size = 9, keyword = "", categoryId = "") => {
+export const getProductsApi = async (page = 0, size = 9, keyword = "", categoryId = "", sortBy = "createdAt", sortDir = "desc", minPrice = "", maxPrice = "") => {
   let url = "/api/products?page=" + page + "&size=" + size;
-  if (keyword) url += "&keyword=" + keyword;
+  if (keyword) url += "&keyword=" + encodeURIComponent(keyword);
   if (categoryId) url += "&categoryId=" + categoryId;
-  const response = await api.get(url);  return response.data;
+  if (sortBy) url += "&sortBy=" + sortBy;
+  if (sortDir) url += "&sortDir=" + sortDir;
+  if (minPrice !== "" && minPrice !== null && minPrice !== undefined) url += "&minPrice=" + minPrice;
+  if (maxPrice !== "" && maxPrice !== null && maxPrice !== undefined) url += "&maxPrice=" + maxPrice;
+  const response = await api.get(url);
+  return response.data;
 };
 
 export const getProductByIdApi = async (id) => {

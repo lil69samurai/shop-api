@@ -103,7 +103,13 @@
     "shipping2d": "カード/振込/代引",
     "shipping3": "専門サポート",
     "shipping3d": "お気軽にご相談",
-    "related": "関連商品"
+    "related": "関連商品",
+    "priceRange": "価格帯",
+    "priceRangeLabel": "価格範囲",
+    "minPrice": "最低価格",
+    "maxPrice": "最高価格",
+    "applyPrice": "適用",
+    "noResults": "商品が見つかりませんでした"
   },
   "cart": {
     "title": "買い物かご",

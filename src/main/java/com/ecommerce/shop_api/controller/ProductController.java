@@ -17,6 +17,7 @@ import com.ecommerce.shop_api.service.FileStorageService;
 import com.ecommerce.shop_api.repository.ProductImageRepository;
 import com.ecommerce.shop_api.entity.ProductImage;
 import com.ecommerce.shop_api.repository.ProductRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -59,19 +60,21 @@ public class ProductController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) Long categoryId) {
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
 
         Sort sort = sortDir.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<ProductResponse> responses = productService.searchProducts(keyword, categoryId, pageable);
+        Page<ProductResponse> responses = productService.searchProducts(keyword, categoryId, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(ApiResponse.success("Search successful", responses));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id) {
         ProductResponse response = productService.getProductById(id);
-        return ResponseEntity.ok(ApiResponse.success("Query successful\n", response));
+        return ResponseEntity.ok(ApiResponse.success("Query successful", response));
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -97,6 +100,7 @@ public class ProductController {
         ProductResponse response = productService.updateProduct(id, request);
         return ResponseEntity.ok(ApiResponse.success("Product updated successfully", response));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<String>> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);
@@ -113,7 +117,6 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", response));
     }
 
-    // 多圖上傳 API (為單一商品新增多張圖片)
     @PostMapping("/{id}/images")
     public ResponseEntity<ApiResponse<ProductResponse>> uploadProductImages(
             @PathVariable Long id,
@@ -133,7 +136,6 @@ public class ProductController {
             product.getImages().add(img);
         }
 
-        // 如果主圖為空，設定第一張為主圖
         if (product.getImageUrl() == null && !product.getImages().isEmpty()) {
             product.setImageUrl(product.getImages().get(0).getImageUrl());
         }
@@ -143,7 +145,6 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Images uploaded successfully", response));
     }
 
-    // 刪除單張圖片
     @DeleteMapping("/images/{imageId}")
     public ResponseEntity<ApiResponse<String>> deleteProductImage(@PathVariable Long imageId) {
         ProductImage img = productImageRepository.findById(imageId)
@@ -152,5 +153,4 @@ public class ProductController {
         productImageRepository.delete(img);
         return ResponseEntity.ok(ApiResponse.success("Image deleted", null));
     }
-
 }

@@ -13,6 +13,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 public class ProductService {
@@ -43,23 +45,38 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
-        Page<Product> products;
-
+    public Page<ProductResponse> searchProducts(String keyword, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
         boolean hasCategory = categoryId != null;
+        boolean hasPrice = minPrice != null && maxPrice != null;
 
-        if (hasKeyword && hasCategory) {
+        Page<Product> products;
+
+        if (hasKeyword && hasCategory && hasPrice) {
+            products = productRepository.searchByKeywordAndCategoryAndPriceBetween(keyword, categoryId, minPrice, maxPrice, pageable);
+        } else if (hasKeyword && hasCategory) {
             products = productRepository.searchByKeywordAndCategory(keyword, categoryId, pageable);
+        } else if (hasKeyword && hasPrice) {
+            products = productRepository.searchByKeywordAndPriceBetween(keyword, minPrice, maxPrice, pageable);
+        } else if (hasCategory && hasPrice) {
+            products = productRepository.findByCategoryIdAndPriceBetween(categoryId, minPrice, maxPrice, pageable);
         } else if (hasKeyword) {
             products = productRepository.searchByKeyword(keyword, pageable);
         } else if (hasCategory) {
             products = productRepository.findByCategoryId(categoryId, pageable);
+        } else if (hasPrice) {
+            products = productRepository.findByPriceBetween(minPrice, maxPrice, pageable);
         } else {
             products = productRepository.findAll(pageable);
         }
 
         return products.map(this::mapToResponse);
+    }
+
+    // Backward compatible overload (for any code still calling the old 3-param version)
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
+        return searchProducts(keyword, categoryId, null, null, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -108,7 +125,6 @@ public class ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
-        // 收集多圖片 URL 陣列
         java.util.List<String> imageUrls = new java.util.ArrayList<>();
         java.util.List<Long> imageIds = new java.util.ArrayList<>();
         if (product.getImages() != null && !product.getImages().isEmpty()) {
