@@ -1,5 +1,6 @@
 package com.ecommerce.shop_api.service;
 
+import com.ecommerce.shop_api.dto.request.OrderAdminUpdateRequest;
 import com.ecommerce.shop_api.dto.request.OrderItemRequest;
 import com.ecommerce.shop_api.dto.request.OrderRequest;
 import com.ecommerce.shop_api.dto.response.OrderItemResponse;
@@ -132,6 +133,29 @@ public class OrderService {
                         "Order not found | 注文が見つかりません: ID " + id
                 ));
         return mapToResponse(order);
+    }
+
+    @Transactional
+    public OrderResponse adminUpdateOrderInfo(Long id, OrderAdminUpdateRequest request) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Order not found | 注文が見つかりません: ID " + id
+                ));
+
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.PAID) {
+            throw new RuntimeException(
+                    "Only PENDING or PAID orders can be edited | PENDING または PAID の注文のみ編集できます"
+            );
+        }
+
+        order.setRecipientName(request.getRecipientName());
+        order.setPhone(request.getPhone());
+        order.setZipCode(request.getZipCode());
+        order.setAddress(request.getAddress());
+        order.setNote(request.getNote());
+
+        Order saved = orderRepository.save(order);
+        return mapToResponse(saved);
     }
 
     @Transactional

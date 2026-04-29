@@ -33,12 +33,19 @@ const AdminOrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // Filters
   const [statusFilter, setStatusFilter] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
-
-  // Confirm dialog
   const [confirmDialog, setConfirmDialog] = useState(null);
+
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [savingInfo, setSavingInfo] = useState(false);
+  const [editForm, setEditForm] = useState({
+    recipientName: "",
+    phone: "",
+    zipCode: "",
+    address: "",
+    note: "",
+  });
 
   useEffect(() => { fetchOrders(); }, []);
 
@@ -48,11 +55,69 @@ const AdminOrdersPage = () => {
       setOrders(getArray(res));
     } catch (error) {
       toast.error('訂單載入失敗');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const canEditOrderInfo = (status) => status === "PENDING" || status === "PAID";
+
+  const startEditInfo = (order) => {
+    setEditForm({
+      recipientName: order.recipientName || "",
+      phone: order.phone || "",
+      zipCode: order.zipCode || "",
+      address: order.address || "",
+      note: order.note || "",
+    });
+    setEditingInfo(true);
+  };
+
+  const cancelEditInfo = () => {
+    setEditingInfo(false);
+    setSavingInfo(false);
+  };
+
+  const handleEditFormChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const saveOrderInfo = async () => {
+    if (!selectedOrder) return;
+
+    const payload = {
+      recipientName: editForm.recipientName.trim(),
+      phone: editForm.phone.trim(),
+      zipCode: editForm.zipCode.trim(),
+      address: editForm.address.trim(),
+      note: editForm.note?.trim() || "",
+    };
+
+    if (!payload.recipientName || !payload.phone || !payload.zipCode || !payload.address) {
+      toast.error("收件人、電話、郵遞區號、地址不可為空");
+      return;
+    }
+
+    try {
+      setSavingInfo(true);
+      const res = await orderApi.updateOrderInfoForAdminApi(selectedOrder.id, payload);
+      const updated = res?.data || res;
+      setSelectedOrder(updated);
+      setEditingInfo(false);
+      toast.success("訂單收件資訊已更新");
+      fetchOrders();
+    } catch (error) {
+      const msg = error.response?.data?.message || "更新訂單資訊失敗";
+      toast.error(msg);
+    } finally {
+      setSavingInfo(false);
+    }
   };
 
   const openModal = async (order) => {
     setDetailLoading(true);
+    setEditingInfo(false);
     setSelectedOrder(order);
     try {
       const res = await orderApi.getOrderByIdForAdminApi(order.id);
@@ -60,10 +125,11 @@ const AdminOrdersPage = () => {
       setSelectedOrder(detail);
     } catch (error) {
       toast.error('無法載入訂單明細');
-    } finally { setDetailLoading(false); }
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
-  // Show confirm dialog before status change
   const requestStatusChange = (orderId, currentStatus, newStatus) => {
     const currentCfg = STATUS_CONFIG[currentStatus] || {};
     const newCfg = STATUS_CONFIG[newStatus] || {};
@@ -93,7 +159,6 @@ const AdminOrdersPage = () => {
     setConfirmDialog(null);
   };
 
-  // Filtered orders
   const filteredOrders = orders.filter(o => {
     if (statusFilter && o.status !== statusFilter) return false;
     if (searchKeyword) {
@@ -106,7 +171,6 @@ const AdminOrdersPage = () => {
     return true;
   });
 
-  // Stats
   const stats = {
     total: orders.length,
     pending: orders.filter(o => o.status === "PENDING").length,
@@ -126,13 +190,11 @@ const AdminOrdersPage = () => {
   return (
     <div className="min-h-screen bg-stone-50 py-12 px-4 font-sans">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="mb-10 border-b-2 border-slate-800 pb-6">
           <h1 className="text-3xl font-bold text-slate-900 tracking-wider">訂單管理</h1>
           <p className="mt-2 text-sm text-amber-600 font-medium tracking-widest">ORDER MANAGEMENT</p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white border border-slate-200 p-4 rounded-lg">
             <p className="text-xs text-stone-500 mb-1">總訂單</p>
@@ -152,22 +214,30 @@ const AdminOrdersPage = () => {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="bg-white border border-slate-200 p-4 rounded-lg mb-6 flex flex-col md:flex-row gap-3 items-center">
-          <input type="text" placeholder="🔍 搜尋訂單 ID / 會員 / 收件人..."
-            value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)}
-            className="flex-1 w-full border border-stone-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500" />
+          <input
+            type="text"
+            placeholder="🔍 搜尋訂單 ID / 會員 / 收件人..."
+            value={searchKeyword}
+            onChange={e => setSearchKeyword(e.target.value)}
+            className="flex-1 w-full border border-stone-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+          />
           <div className="flex gap-2 flex-wrap">
-            <button onClick={() => setStatusFilter("")}
-              className={"px-3 py-1.5 rounded-full text-xs font-bold border transition " + (!statusFilter ? "bg-slate-800 text-white border-slate-800" : "bg-white text-stone-500 border-stone-200 hover:border-slate-400")}>
+            <button
+              onClick={() => setStatusFilter("")}
+              className={"px-3 py-1.5 rounded-full text-xs font-bold border transition " + (!statusFilter ? "bg-slate-800 text-white border-slate-800" : "bg-white text-stone-500 border-stone-200 hover:border-slate-400")}
+            >
               全部 ({stats.total})
             </button>
             {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
               const count = orders.filter(o => o.status === key).length;
               if (count === 0) return null;
               return (
-                <button key={key} onClick={() => setStatusFilter(statusFilter === key ? "" : key)}
-                  className={"px-3 py-1.5 rounded-full text-xs font-bold border transition " + (statusFilter === key ? cfg.color + " border-current" : "bg-white text-stone-500 border-stone-200 hover:border-slate-400")}>
+                <button
+                  key={key}
+                  onClick={() => setStatusFilter(statusFilter === key ? "" : key)}
+                  className={"px-3 py-1.5 rounded-full text-xs font-bold border transition " + (statusFilter === key ? cfg.color + " border-current" : "bg-white text-stone-500 border-stone-200 hover:border-slate-400")}
+                >
                   {cfg.icon} {cfg.label} ({count})
                 </button>
               );
@@ -175,12 +245,10 @@ const AdminOrdersPage = () => {
           </div>
         </div>
 
-        {/* Results count */}
         <p className="text-sm text-stone-400 mb-3">
           {filteredOrders.length} 筆訂單{statusFilter ? `（篩選: ${STATUS_CONFIG[statusFilter]?.label}）` : ""}
         </p>
 
-        {/* Orders Table */}
         <div className="bg-white shadow-sm border border-slate-200 overflow-x-auto rounded-lg">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -224,12 +292,14 @@ const AdminOrdersPage = () => {
                               const nsCfg = STATUS_CONFIG[ns] || {};
                               const isCancelBtn = ns === "CANCELLED";
                               return (
-                                <button key={ns}
+                                <button
+                                  key={ns}
                                   onClick={() => requestStatusChange(o.id, o.status, ns)}
                                   className={"text-xs font-bold px-2.5 py-1 rounded border transition " +
                                     (isCancelBtn
                                       ? "bg-red-50 border-red-300 text-red-600 hover:bg-red-100"
-                                      : "bg-slate-50 border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400")}>
+                                      : "bg-slate-50 border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400")}
+                                >
                                   {nsCfg.icon} → {nsCfg.label}
                                 </button>
                               );
@@ -240,8 +310,10 @@ const AdminOrdersPage = () => {
                         )}
                       </td>
                       <td className="p-4 text-center">
-                        <button onClick={() => openModal(o)}
-                          className="text-xs font-bold text-white bg-slate-800 px-4 py-2 hover:bg-amber-500 transition-colors rounded">
+                        <button
+                          onClick={() => openModal(o)}
+                          className="text-xs font-bold text-white bg-slate-800 px-4 py-2 hover:bg-amber-500 transition-colors rounded"
+                        >
                           詳細を見る
                         </button>
                       </td>
@@ -253,7 +325,6 @@ const AdminOrdersPage = () => {
           </table>
         </div>
 
-        {/* Status Flow Legend */}
         <div className="mt-8 bg-white border border-slate-200 rounded-lg p-4">
           <h3 className="text-sm font-bold text-slate-800 mb-3">📋 訂單狀態流程</h3>
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -272,7 +343,6 @@ const AdminOrdersPage = () => {
           </div>
         </div>
 
-        {/* Confirm Dialog */}
         {confirmDialog && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm">
             <div className="bg-white w-full max-w-sm rounded-lg shadow-2xl overflow-hidden">
@@ -287,13 +357,17 @@ const AdminOrdersPage = () => {
                   </div>
                 )}
                 <div className="flex justify-end gap-3 mt-4">
-                  <button onClick={() => setConfirmDialog(null)}
-                    className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300">
+                  <button
+                    onClick={() => setConfirmDialog(null)}
+                    className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300"
+                  >
                     取消
                   </button>
-                  <button onClick={confirmStatusChange}
+                  <button
+                    onClick={confirmStatusChange}
                     className={"px-4 py-2 text-white rounded-lg text-sm font-bold " +
-                      (confirmDialog.newStatus === "CANCELLED" ? "bg-red-600 hover:bg-red-700" : "bg-amber-600 hover:bg-amber-700")}>
+                      (confirmDialog.newStatus === "CANCELLED" ? "bg-red-600 hover:bg-red-700" : "bg-amber-600 hover:bg-amber-700")}
+                  >
                     確認變更
                   </button>
                 </div>
@@ -302,7 +376,6 @@ const AdminOrdersPage = () => {
           </div>
         )}
 
-        {/* Order Detail Modal */}
         {selectedOrder && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm">
             <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col rounded-lg">
@@ -311,14 +384,22 @@ const AdminOrdersPage = () => {
                   <h2 className="text-xl font-bold">訂單明細 #{selectedOrder.id}</h2>
                   <p className="text-xs text-amber-400 mt-1">訂購人: {selectedOrder.username || 'N/A'}</p>
                 </div>
-                <button onClick={() => setSelectedOrder(null)} className="text-stone-400 hover:text-white text-2xl">✕</button>
+                <button
+                  onClick={() => {
+                    setSelectedOrder(null);
+                    setEditingInfo(false);
+                  }}
+                  className="text-stone-400 hover:text-white text-2xl"
+                >
+                  ✕
+                </button>
               </div>
+
               <div className="p-6">
                 {detailLoading ? (
                   <p className="text-amber-600 text-sm animate-pulse">正在載入明細...</p>
                 ) : (
                   <>
-                    {/* Current Status + Actions */}
                     <div className="mb-6">
                       <h3 className="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">📊 訂單狀態</h3>
                       <div className="flex items-center gap-3 flex-wrap">
@@ -332,12 +413,14 @@ const AdminOrdersPage = () => {
                               const nsCfg = STATUS_CONFIG[ns] || {};
                               const isCancelBtn = ns === "CANCELLED";
                               return (
-                                <button key={ns}
+                                <button
+                                  key={ns}
                                   onClick={() => requestStatusChange(selectedOrder.id, selectedOrder.status, ns)}
                                   className={"text-xs font-bold px-3 py-1.5 rounded-full border transition " +
                                     (isCancelBtn
                                       ? "bg-red-50 border-red-300 text-red-600 hover:bg-red-100"
-                                      : "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100")}>
+                                      : "bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100")}
+                                >
                                   {nsCfg.icon} {nsCfg.label}
                                 </button>
                               );
@@ -347,21 +430,101 @@ const AdminOrdersPage = () => {
                       </div>
                     </div>
 
-                    {/* Shipping Info */}
                     {selectedOrder.recipientName && (
                       <div className="mb-6">
-                        <h3 className="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">📦 收件資訊</h3>
-                        <div className="bg-stone-50 rounded-lg p-4 space-y-1 text-sm">
-                          <p><span className="text-stone-500">收件人:</span> <span className="font-medium">{selectedOrder.recipientName}</span></p>
-                          <p><span className="text-stone-500">電話:</span> <span className="font-medium">{selectedOrder.phone}</span></p>
-                          <p><span className="text-stone-500">郵遞區號:</span> <span className="font-medium">{selectedOrder.zipCode}</span></p>
-                          <p><span className="text-stone-500">地址:</span> <span className="font-medium">{selectedOrder.address}</span></p>
-                          {selectedOrder.note && <p><span className="text-stone-500">備註:</span> <span className="font-medium">{selectedOrder.note}</span></p>}
+                        <div className="flex items-center justify-between gap-3 mb-3 border-b border-slate-200 pb-2">
+                          <h3 className="text-sm font-bold text-slate-800">📦 收件資訊</h3>
+                          {canEditOrderInfo(selectedOrder.status) && !editingInfo && (
+                            <button
+                              onClick={() => startEditInfo(selectedOrder)}
+                              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition"
+                            >
+                              編輯收件資訊
+                            </button>
+                          )}
                         </div>
+
+                        {!editingInfo ? (
+                          <div className="bg-stone-50 rounded-lg p-4 space-y-1 text-sm">
+                            <p><span className="text-stone-500">收件人:</span> <span className="font-medium">{selectedOrder.recipientName}</span></p>
+                            <p><span className="text-stone-500">電話:</span> <span className="font-medium">{selectedOrder.phone}</span></p>
+                            <p><span className="text-stone-500">郵遞區號:</span> <span className="font-medium">{selectedOrder.zipCode}</span></p>
+                            <p><span className="text-stone-500">地址:</span> <span className="font-medium">{selectedOrder.address}</span></p>
+                            {selectedOrder.note && <p><span className="text-stone-500">備註:</span> <span className="font-medium">{selectedOrder.note}</span></p>}
+                          </div>
+                        ) : (
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 space-y-4">
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">收件人</label>
+                              <input
+                                type="text"
+                                name="recipientName"
+                                value={editForm.recipientName}
+                                onChange={handleEditFormChange}
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">電話</label>
+                              <input
+                                type="text"
+                                name="phone"
+                                value={editForm.phone}
+                                onChange={handleEditFormChange}
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">郵遞區號</label>
+                              <input
+                                type="text"
+                                name="zipCode"
+                                value={editForm.zipCode}
+                                onChange={handleEditFormChange}
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">地址</label>
+                              <textarea
+                                name="address"
+                                value={editForm.address}
+                                onChange={handleEditFormChange}
+                                rows="3"
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-bold text-slate-700 mb-1">備註</label>
+                              <textarea
+                                name="note"
+                                value={editForm.note}
+                                onChange={handleEditFormChange}
+                                rows="3"
+                                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              />
+                            </div>
+                            <div className="flex justify-end gap-3 pt-2">
+                              <button
+                                onClick={cancelEditInfo}
+                                disabled={savingInfo}
+                                className="px-4 py-2 bg-stone-200 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-300 disabled:opacity-50"
+                              >
+                                取消
+                              </button>
+                              <button
+                                onClick={saveOrderInfo}
+                                disabled={savingInfo}
+                                className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 disabled:opacity-50"
+                              >
+                                {savingInfo ? "儲存中..." : "儲存修改"}
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {/* Payment Info */}
                     {PAYMENT_CONFIG[selectedOrder.paymentMethod] && (
                       <div className="mb-6">
                         <h3 className="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">💰 付款方式</h3>
@@ -372,7 +535,6 @@ const AdminOrdersPage = () => {
                       </div>
                     )}
 
-                    {/* Items */}
                     <h3 className="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">🛒 購買品項</h3>
                     <div className="space-y-3">
                       {selectedOrder.items && selectedOrder.items.length > 0 ? (
@@ -395,13 +557,11 @@ const AdminOrdersPage = () => {
                       )}
                     </div>
 
-                    {/* Total */}
                     <div className="mt-6 pt-4 border-t-2 border-slate-800 flex justify-between items-end">
                       <span className="font-bold text-slate-700">總計</span>
                       <span className="text-2xl font-bold text-amber-600">¥{Number(selectedOrder.totalAmount).toLocaleString()}</span>
                     </div>
 
-                    {/* Timestamps */}
                     <div className="mt-4 pt-3 border-t border-stone-200 flex justify-between text-xs text-stone-400">
                       <span>建立: {selectedOrder.createdAt ? new Date(selectedOrder.createdAt).toLocaleString() : '-'}</span>
                       <span>更新: {selectedOrder.updatedAt ? new Date(selectedOrder.updatedAt).toLocaleString() : '-'}</span>
@@ -416,4 +576,5 @@ const AdminOrdersPage = () => {
     </div>
   );
 };
+
 export default AdminOrdersPage;

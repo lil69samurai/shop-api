@@ -1,5 +1,6 @@
 package com.ecommerce.shop_api.controller;
 
+import com.ecommerce.shop_api.dto.request.OrderAdminUpdateRequest;
 import com.ecommerce.shop_api.dto.request.OrderRequest;
 import com.ecommerce.shop_api.dto.response.ApiResponse;
 import com.ecommerce.shop_api.dto.response.OrderResponse;
@@ -69,6 +70,15 @@ public class OrderController {
             @PathVariable Long id) {
         OrderResponse response = orderService.getOrderByIdForAdmin(id);
         return ResponseEntity.ok(ApiResponse.success("Order retrieved successfully", response));
+    }
+
+    @PatchMapping("/admin/{id}")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse<OrderResponse>> adminUpdateOrderInfo(
+            @PathVariable Long id,
+            @Valid @RequestBody OrderAdminUpdateRequest request) {
+        OrderResponse response = orderService.adminUpdateOrderInfo(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Order info updated successfully", response));
     }
 
     @DeleteMapping("/{id}")

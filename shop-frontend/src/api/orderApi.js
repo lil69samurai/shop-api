@@ -21,6 +21,11 @@ export const getOrderByIdForAdminApi = async (id) => {
   return response.data;
 };
 
+export const updateOrderInfoForAdminApi = async (id, data) => {
+  const response = await api.patch(`/api/orders/admin/${id}`, data);
+  return response.data;
+};
+
 export const createOrderApi = async (data) => {
   const response = await api.post("/api/orders", data);
   return response.data;
