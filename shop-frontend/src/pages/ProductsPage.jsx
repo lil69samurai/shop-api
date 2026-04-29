@@ -61,7 +61,7 @@ const ProductsPage = () => {
   useEffect(() => { fetchCategories(); }, []);
 
   useEffect(() => {
-    const catFromUrl = searchParams.get("category");
+    const catFromUrl = searchParams.get("categoryId");
     if (catFromUrl) {
       setSelectedCategory(catFromUrl);
       setCurrentPage(0);
