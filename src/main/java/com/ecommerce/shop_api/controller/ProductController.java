@@ -19,9 +19,9 @@ import com.ecommerce.shop_api.entity.ProductImage;
 import com.ecommerce.shop_api.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
-
 
 @RestController
 @RequestMapping("/api/products")
@@ -125,7 +125,7 @@ public class ProductController {
         com.ecommerce.shop_api.entity.Product product = productRepository.findById(id)
                 .orElseThrow(() -> new com.ecommerce.shop_api.exception.ResourceNotFoundException("Product not found: " + id));
 
-        int currentMax = product.getImages().size();
+        int currentMax = productImageRepository.findByProductIdOrderBySortOrderAsc(id).size();
         for (int i = 0; i < files.size(); i++) {
             String imageUrl = fileStorageService.saveFile(files.get(i));
             ProductImage img = ProductImage.builder()
@@ -141,16 +141,33 @@ public class ProductController {
         }
 
         productRepository.save(product);
+        productService.normalizeImageSortOrder(id);
         ProductResponse response = productService.getProductById(id);
         return ResponseEntity.ok(ApiResponse.success("Images uploaded successfully", response));
     }
 
+    @PatchMapping("/{id}/images/reorder")
+    public ResponseEntity<ApiResponse<ProductResponse>> reorderProductImages(
+            @PathVariable Long id,
+            @RequestBody Map<String, List<Long>> payload) {
+        List<Long> imageIds = payload.get("imageIds");
+        if (imageIds == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("imageIds is required"));
+        }
+        ProductResponse response = productService.reorderProductImages(id, imageIds);
+        return ResponseEntity.ok(ApiResponse.success("Images reordered successfully", response));
+    }
+
     @DeleteMapping("/images/{imageId}")
-    public ResponseEntity<ApiResponse<String>> deleteProductImage(@PathVariable Long imageId) {
+    public ResponseEntity<ApiResponse<ProductResponse>> deleteProductImage(@PathVariable Long imageId) {
         ProductImage img = productImageRepository.findById(imageId)
                 .orElseThrow(() -> new com.ecommerce.shop_api.exception.ResourceNotFoundException("Image not found: " + imageId));
-        try { fileStorageService.deleteFile(img.getImageUrl()); } catch (Exception e) {}
-        productImageRepository.delete(img);
-        return ResponseEntity.ok(ApiResponse.success("Image deleted", null));
+        try {
+            fileStorageService.deleteFile(img.getImageUrl());
+        } catch (Exception e) {
+        }
+        ProductResponse response = productService.deleteProductImageAndReorder(imageId);
+        return ResponseEntity.ok(ApiResponse.success("Image deleted", response));
     }
 }

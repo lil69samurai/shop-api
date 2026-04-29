@@ -30,6 +30,7 @@ const AdminProductsPage = () => {
   const [multiFiles, setMultiFiles] = useState(null);
   const [multiPreviews, setMultiPreviews] = useState([]);
   const [deletingImageId, setDeletingImageId] = useState(null);
+  const [reorderingImage, setReorderingImage] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', price: '', stock: '', categoryId: '' });
 
   useEffect(() => { fetchData(); }, []);
@@ -139,6 +140,28 @@ const AdminProductsPage = () => {
       toast.error('\u5716\u7247\u522A\u9664\u5931\u6557');
     } finally {
       setDeletingImageId(null);
+    }
+  };
+
+  const handleMoveImage = async (fromIndex, toIndex) => {
+    if (!currentProduct?.imageIds || toIndex < 0 || toIndex >= currentProduct.imageIds.length) return;
+    try {
+      setReorderingImage(true);
+      const newImageIds = [...currentProduct.imageIds];
+      const [moved] = newImageIds.splice(fromIndex, 1);
+      newImageIds.splice(toIndex, 0, moved);
+
+      await productApi.reorderProductImagesApi(currentId, newImageIds);
+
+      const res = await productApi.getProductByIdApi(currentId);
+      const updated = res.data || res;
+      setCurrentProduct(updated);
+      fetchData();
+      toast.success('\u5716\u7247\u9806\u5E8F\u5DF2\u66F4\u65B0');
+    } catch (error) {
+      toast.error('\u5716\u7247\u9806\u5E8F\u66F4\u65B0\u5931\u6557');
+    } finally {
+      setReorderingImage(false);
     }
   };
 
@@ -280,11 +303,34 @@ const AdminProductsPage = () => {
                               <img src={getImageSrc(url)} className="w-full h-full object-cover" />
                             </div>
                             {imageId && (
-                              <button onClick={() => handleDeleteImage(imageId)}
-                                disabled={deletingImageId === imageId}
-                                className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-600 disabled:bg-stone-400">
-                                {deletingImageId === imageId ? "\u2026" : "\u2715"}
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleDeleteImage(imageId)}
+                                  disabled={deletingImageId === imageId || reorderingImage}
+                                  className="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:bg-red-600 disabled:bg-stone-400"
+                                >
+                                  {deletingImageId === imageId ? "\u2026" : "\u2715"}
+                                </button>
+
+                                <div className="mt-2 flex justify-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveImage(idx, idx - 1)}
+                                    disabled={idx === 0 || reorderingImage || deletingImageId === imageId}
+                                    className="px-2 py-1 text-xs bg-slate-100 border border-slate-300 rounded disabled:opacity-40"
+                                  >
+                                    ↑
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveImage(idx, idx + 1)}
+                                    disabled={idx === currentProduct.imageUrls.length - 1 || reorderingImage || deletingImageId === imageId}
+                                    className="px-2 py-1 text-xs bg-slate-100 border border-slate-300 rounded disabled:opacity-40"
+                                  >
+                                    ↓
+                                  </button>
+                                </div>
+                              </>
                             )}
                             <p className="text-center text-xs text-stone-400 mt-1">#{idx + 1}</p>
                           </div>

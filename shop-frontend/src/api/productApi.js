@@ -70,3 +70,9 @@ export const deleteProductImageApi = async (imageId) => {
   const response = await api.delete("/api/products/images/" + imageId);
   return response.data;
 };
+
+
+export const reorderProductImagesApi = async (id, imageIds) => {
+  const response = await api.patch(`/api/products/${id}/images/reorder`, { imageIds });
+  return response.data;
+};

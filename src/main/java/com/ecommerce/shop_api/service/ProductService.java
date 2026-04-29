@@ -4,8 +4,10 @@ import com.ecommerce.shop_api.dto.request.ProductRequest;
 import com.ecommerce.shop_api.dto.response.ProductResponse;
 import com.ecommerce.shop_api.entity.Category;
 import com.ecommerce.shop_api.entity.Product;
+import com.ecommerce.shop_api.entity.ProductImage;
 import com.ecommerce.shop_api.exception.ResourceNotFoundException;
 import com.ecommerce.shop_api.repository.CategoryRepository;
+import com.ecommerce.shop_api.repository.ProductImageRepository;
 import com.ecommerce.shop_api.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,12 +16,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductImageRepository productImageRepository;
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
@@ -73,7 +80,6 @@ public class ProductService {
         return products.map(this::mapToResponse);
     }
 
-    // Backward compatible overload (for any code still calling the old 3-param version)
     @Transactional(readOnly = true)
     public Page<ProductResponse> searchProducts(String keyword, Long categoryId, Pageable pageable) {
         return searchProducts(keyword, categoryId, null, null, pageable);
@@ -124,11 +130,92 @@ public class ProductService {
         return mapToResponse(updated);
     }
 
+    @Transactional
+    public ProductResponse reorderProductImages(Long productId, List<Long> imageIds) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        List<ProductImage> currentImages = productImageRepository.findByProductIdOrderBySortOrderAsc(productId);
+
+        if (currentImages.size() != imageIds.size()) {
+            throw new RuntimeException("Image count mismatch | 圖片數量不一致");
+        }
+
+        Set<Long> currentIdSet = new HashSet<>();
+        for (ProductImage img : currentImages) {
+            currentIdSet.add(img.getId());
+        }
+
+        Set<Long> requestIdSet = new HashSet<>(imageIds);
+        if (!currentIdSet.equals(requestIdSet)) {
+            throw new RuntimeException("Invalid image list for this product | 圖片清單不屬於此商品");
+        }
+
+        for (int i = 0; i < imageIds.size(); i++) {
+            Long imageId = imageIds.get(i);
+            for (ProductImage img : currentImages) {
+                if (img.getId().equals(imageId)) {
+                    img.setSortOrder(i);
+                    break;
+                }
+            }
+        }
+
+        productImageRepository.saveAll(currentImages);
+
+        List<ProductImage> reordered = productImageRepository.findByProductIdOrderBySortOrderAsc(productId);
+        if (!reordered.isEmpty()) {
+            product.setImageUrl(reordered.get(0).getImageUrl());
+        } else {
+            product.setImageUrl(null);
+        }
+        productRepository.save(product);
+
+        return mapToResponse(product);
+    }
+
+    @Transactional
+    public ProductResponse deleteProductImageAndReorder(Long imageId) {
+        ProductImage img = productImageRepository.findById(imageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found: " + imageId));
+
+        Long productId = img.getProduct().getId();
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
+
+        productImageRepository.delete(img);
+        productImageRepository.flush();
+
+        normalizeImageSortOrder(productId);
+
+        List<ProductImage> remaining = productImageRepository.findByProductIdOrderBySortOrderAsc(productId);
+        if (!remaining.isEmpty()) {
+            product.setImageUrl(remaining.get(0).getImageUrl());
+        } else {
+            product.setImageUrl(null);
+        }
+        productRepository.save(product);
+
+        return mapToResponse(product);
+    }
+
+    @Transactional
+    public void normalizeImageSortOrder(Long productId) {
+        List<ProductImage> images = productImageRepository.findByProductIdOrderBySortOrderAsc(productId);
+        for (int i = 0; i < images.size(); i++) {
+            images.get(i).setSortOrder(i);
+        }
+        productImageRepository.saveAll(images);
+    }
+
     private ProductResponse mapToResponse(Product product) {
-        java.util.List<String> imageUrls = new java.util.ArrayList<>();
-        java.util.List<Long> imageIds = new java.util.ArrayList<>();
-        if (product.getImages() != null && !product.getImages().isEmpty()) {
-            for (com.ecommerce.shop_api.entity.ProductImage img : product.getImages()) {
+        List<ProductImage> sortedImages = productImageRepository.findByProductIdOrderBySortOrderAsc(product.getId());
+
+        List<String> imageUrls = new ArrayList<>();
+        List<Long> imageIds = new ArrayList<>();
+
+        if (!sortedImages.isEmpty()) {
+            for (ProductImage img : sortedImages) {
                 imageUrls.add(img.getImageUrl());
                 imageIds.add(img.getId());
             }
