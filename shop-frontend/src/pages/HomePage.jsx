@@ -5,11 +5,21 @@ import { getProductsApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
 import { getImageSrc, CLOUDINARY_CLOUD_NAME } from "../utils/config";
 
-const BANNER_IMAGES = [
+const BANNER_URLS = [
   `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner1`,
   `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner2`,
   `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner3`,
 ];
+
+// Use Image().onload to check if banner exists (bypasses CORS)
+const checkImageExists = (url) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -23,8 +33,18 @@ const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getProductsApi(0, 20);
-        const products = data.data?.content || data.content || [];
+        // 1. Check banners first (parallel with product fetch)
+        const bannerPromise = Promise.all(BANNER_URLS.map(checkImageExists));
+
+        // 2. Fetch products
+        let products = [];
+        try {
+          const data = await getProductsApi(0, 20);
+          products = data.data?.content || data.content || [];
+        } catch (e) {
+          console.log("Products fetch failed (server may be waking up)");
+        }
+
         setFeaturedProducts(products.slice(0, 4));
 
         // Build category -> product image mapping
@@ -37,16 +57,12 @@ const HomePage = () => {
         });
         setCategoryImages(catImgMap);
 
-        // Load banner images - try Cloudinary banners first, fallback to product images
-        const validBanners = [];
-        for (const url of BANNER_IMAGES) {
-          try {
-            const res = await fetch(url, { method: "HEAD" });
-            if (res.ok) validBanners.push(url);
-          } catch (e) {}
-        }
+        // 3. Resolve banners
+        const bannerResults = await bannerPromise;
+        const validBanners = bannerResults.filter(url => url !== null);
 
         if (validBanners.length > 0) {
+          // Use Cloudinary banners
           setHeroImages(validBanners);
         } else {
           // Fallback: use product images
@@ -58,9 +74,13 @@ const HomePage = () => {
               imgs.push(p.imageUrl);
             }
           });
-          setHeroImages(imgs.slice(0, 6));
+          if (imgs.length > 0) {
+            setHeroImages(imgs.slice(0, 6));
+          }
+          // If no product images either, heroImages stays empty -> gradient fallback
         }
 
+        // 4. Fetch categories
         try {
           const catData = await getCategoriesApi();
           setCategories(catData.data || catData || []);
@@ -167,16 +187,13 @@ const HomePage = () => {
                 return (
                   <Link to={"/products?category=" + cat.id} key={cat.id}
                     className="group relative rounded-xl overflow-hidden border border-stone-100 hover:shadow-lg transition-all aspect-[4/3]">
-                    {/* Background image or gradient fallback */}
                     {catImg ? (
                       <img src={getImageSrc(catImg)} alt={cat.name}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900"></div>
                     )}
-                    {/* Dark overlay */}
                     <div className="absolute inset-0 bg-slate-900 bg-opacity-40 group-hover:bg-opacity-30 transition-all"></div>
-                    {/* Text content */}
                     <div className="relative z-10 h-full flex flex-col justify-end p-3 sm:p-4">
                       <h3 className="font-bold text-sm sm:text-base text-white drop-shadow-lg">{cat.name}</h3>
                       {cat.description && (
