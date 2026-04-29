@@ -11,7 +11,6 @@ const BANNER_URLS = [
   `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner3`,
 ];
 
-// Use Image().onload to check if banner exists (bypasses CORS)
 const checkImageExists = (url) => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -33,16 +32,14 @@ const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Check banners first (parallel with product fetch)
-        const bannerPromise = Promise.all(BANNER_URLS.map(checkImageExists));
-
-        // 2. Fetch products
+        // 1. Fetch products first (most important)
         let products = [];
         try {
           const data = await getProductsApi(0, 20);
           products = data.data?.content || data.content || [];
+          console.log("[Hero] Products loaded:", products.length);
         } catch (e) {
-          console.log("Products fetch failed (server may be waking up)");
+          console.log("[Hero] Products fetch failed (server may be waking up)");
         }
 
         setFeaturedProducts(products.slice(0, 4));
@@ -57,30 +54,33 @@ const HomePage = () => {
         });
         setCategoryImages(catImgMap);
 
-        // 3. Resolve banners
-        const bannerResults = await bannerPromise;
-        const validBanners = bannerResults.filter(url => url !== null);
-
-        if (validBanners.length > 0) {
-          // Use Cloudinary banners
-          setHeroImages(validBanners);
-        } else {
-          // Fallback: use product images
-          const imgs = [];
-          products.forEach(p => {
-            if (p.imageUrls && p.imageUrls.length > 0) {
-              p.imageUrls.forEach(url => imgs.push(url));
-            } else if (p.imageUrl) {
-              imgs.push(p.imageUrl);
-            }
-          });
-          if (imgs.length > 0) {
-            setHeroImages(imgs.slice(0, 6));
+        // 2. Collect product images as fallback first
+        const productImgs = [];
+        products.forEach(p => {
+          if (p.imageUrl) {
+            productImgs.push(p.imageUrl);
           }
-          // If no product images either, heroImages stays empty -> gradient fallback
+        });
+        console.log("[Hero] Product images found:", productImgs.length, productImgs.slice(0, 3));
+
+        // 3. Set product images immediately as hero (so hero shows ASAP)
+        if (productImgs.length > 0) {
+          setHeroImages(productImgs.slice(0, 6));
         }
 
-        // 4. Fetch categories
+        // 4. Then try banners (upgrade if available)
+        try {
+          const bannerResults = await Promise.all(BANNER_URLS.map(checkImageExists));
+          const validBanners = bannerResults.filter(url => url !== null);
+          console.log("[Hero] Valid banners:", validBanners.length);
+          if (validBanners.length > 0) {
+            setHeroImages(validBanners);
+          }
+        } catch (e) {
+          console.log("[Hero] Banner check failed, using product images");
+        }
+
+        // 5. Fetch categories
         try {
           const catData = await getCategoriesApi();
           setCategories(catData.data || catData || []);
@@ -113,12 +113,15 @@ const HomePage = () => {
       {/* Hero */}
       <div className="relative h-[420px] sm:h-[500px] md:h-[600px] overflow-hidden">
         {heroImages.length > 0 ? (
-          heroImages.map((img, idx) => (
-            <div key={idx} className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
-              style={{ opacity: idx === currentHero ? 1 : 0 }}>
-              <img src={getImageSrc(img)} alt={"Hero " + (idx + 1)} className="w-full h-full object-cover" />
-            </div>
-          ))
+          heroImages.map((img, idx) => {
+            const src = getImageSrc(img);
+            return (
+              <div key={idx} className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+                style={{ opacity: idx === currentHero ? 1 : 0 }}>
+                {src && <img src={src} alt={"Hero " + (idx + 1)} className="w-full h-full object-cover" />}
+              </div>
+            );
+          })
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800"></div>
         )}
