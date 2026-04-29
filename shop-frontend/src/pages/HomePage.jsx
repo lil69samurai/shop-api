@@ -6,9 +6,9 @@ import { getCategoriesApi } from "../api/categoryApi";
 import { getImageSrc, CLOUDINARY_CLOUD_NAME } from "../utils/config";
 
 const BANNER_URLS = [
-  `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner1`,
-  `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner2`,
-  `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/shop-banners/banner3`,
+  "https://res.cloudinary.com/dm8ovqeot/image/upload/v1777382606/banner1_en5ltx.png",
+  "https://res.cloudinary.com/dm8ovqeot/image/upload/v1777382605/banner2_h8m4do.png",
+  "https://res.cloudinary.com/dm8ovqeot/image/upload/v1777382736/banner3_gat6rx.png",
 ];
 
 const checkImageExists = (url) => {
