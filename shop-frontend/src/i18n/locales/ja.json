@@ -129,7 +129,8 @@
     "checkout": "レジに進む →",
     "loginRequired": "ログインしてください",
     "cartName": "買い物かご",
-    "itemTypes": "種類の商品"
+    "itemTypes": "種類の商品",
+    "browse": "商品を見る"
   },
   "order": {
     "step1": "お届け先・お支払い",

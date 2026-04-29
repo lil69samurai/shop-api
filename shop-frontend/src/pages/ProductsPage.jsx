@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getProductsApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
@@ -7,6 +7,7 @@ import { getImageSrc } from "../utils/config";
 
 const ProductsPage = () => {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +58,18 @@ const ProductsPage = () => {
     }
   };
 
-  useEffect(() => { fetchCategories(); fetchProducts(0); }, []);
+  useEffect(() => { fetchCategories(); }, []);
+
+  useEffect(() => {
+    const catFromUrl = searchParams.get("category");
+    if (catFromUrl) {
+      setSelectedCategory(catFromUrl);
+      setCurrentPage(0);
+      fetchProducts(0, searchKeyword, catFromUrl, sortBy, sortDir, minPrice, maxPrice);
+    } else {
+      fetchProducts(0);
+    }
+  }, [searchParams]);
 
   const handleSearch = () => {
     setCurrentPage(0);
@@ -167,7 +179,7 @@ const ProductsPage = () => {
             </div>
             <button onClick={() => setShowPriceFilter(!showPriceFilter)}
               className={"px-4 py-2 rounded-lg border transition whitespace-nowrap font-medium text-sm " + (showPriceFilter || minPrice || maxPrice ? "bg-amber-50 border-amber-400 text-amber-700" : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50")}>
-              💰 {t("products.priceRange")}
+              {t("products.priceRange")}
             </button>
             <button onClick={handleSearch}
               className="bg-slate-800 text-white px-6 py-2 rounded-lg hover:bg-slate-700 transition whitespace-nowrap font-medium">

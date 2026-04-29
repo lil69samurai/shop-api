@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getProductsApi } from "../api/productApi";
 import { getCategoriesApi } from "../api/categoryApi";
-import { getImageSrc, CLOUDINARY_CLOUD_NAME } from "../utils/config";
+import { getImageSrc } from "../utils/config";
 
 const BANNER_URLS = [
   "https://res.cloudinary.com/dm8ovqeot/image/upload/v1777382606/banner1_en5ltx.png",
@@ -32,19 +32,16 @@ const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 1. Fetch products first (most important)
         let products = [];
         try {
           const data = await getProductsApi(0, 20);
           products = data.data?.content || data.content || [];
-          console.log("[Hero] Products loaded:", products.length);
         } catch (e) {
-          console.log("[Hero] Products fetch failed (server may be waking up)");
+          console.log("[Hero] Products fetch failed");
         }
 
         setFeaturedProducts(products.slice(0, 4));
 
-        // Build category -> product image mapping
         const catImgMap = {};
         products.forEach(p => {
           const catId = p.categoryId || (p.category && p.category.id);
@@ -54,33 +51,26 @@ const HomePage = () => {
         });
         setCategoryImages(catImgMap);
 
-        // 2. Collect product images as fallback first
+        // Collect product images as fallback
         const productImgs = [];
         products.forEach(p => {
-          if (p.imageUrl) {
-            productImgs.push(p.imageUrl);
-          }
+          if (p.imageUrl) productImgs.push(p.imageUrl);
         });
-        console.log("[Hero] Product images found:", productImgs.length, productImgs.slice(0, 3));
 
-        // 3. Set product images immediately as hero (so hero shows ASAP)
+        // Set product images first
         if (productImgs.length > 0) {
-          setHeroImages(productImgs.slice(0, 6));
+          setHeroImages(productImgs.slice(0, 6).map(url => getImageSrc(url)).filter(Boolean));
         }
 
-        // 4. Then try banners (upgrade if available)
+        // Then try banners (upgrade if available)
         try {
           const bannerResults = await Promise.all(BANNER_URLS.map(checkImageExists));
           const validBanners = bannerResults.filter(url => url !== null);
-          console.log("[Hero] Valid banners:", validBanners.length);
           if (validBanners.length > 0) {
             setHeroImages(validBanners);
           }
-        } catch (e) {
-          console.log("[Hero] Banner check failed, using product images");
-        }
+        } catch (e) {}
 
-        // 5. Fetch categories
         try {
           const catData = await getCategoriesApi();
           setCategories(catData.data || catData || []);
@@ -110,18 +100,18 @@ const HomePage = () => {
 
   return (
     <div className="bg-stone-50">
-      {/* Hero */}
+      {/* Hero - using CSS backgroundImage for reliability */}
       <div className="relative h-[420px] sm:h-[500px] md:h-[600px] overflow-hidden">
         {heroImages.length > 0 ? (
-          heroImages.map((img, idx) => {
-            const src = getImageSrc(img);
-            return (
-              <div key={idx} className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
-                style={{ opacity: idx === currentHero ? 1 : 0 }}>
-                {src && <img src={src} alt={"Hero " + (idx + 1)} className="w-full h-full object-cover" />}
-              </div>
-            );
-          })
+          heroImages.map((imgUrl, idx) => (
+            <div key={idx}
+              className="absolute inset-0 transition-opacity duration-1000 ease-in-out bg-cover bg-center bg-no-repeat"
+              style={{
+                opacity: idx === currentHero ? 1 : 0,
+                backgroundImage: "url(" + imgUrl + ")",
+              }}
+            />
+          ))
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800"></div>
         )}
@@ -191,8 +181,8 @@ const HomePage = () => {
                   <Link to={"/products?category=" + cat.id} key={cat.id}
                     className="group relative rounded-xl overflow-hidden border border-stone-100 hover:shadow-lg transition-all aspect-[4/3]">
                     {catImg ? (
-                      <img src={getImageSrc(catImg)} alt={cat.name}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-500"
+                        style={{ backgroundImage: "url(" + getImageSrc(catImg) + ")" }} />
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-slate-700 to-slate-900"></div>
                     )}
