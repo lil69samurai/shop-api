@@ -122,7 +122,7 @@ const HomePage = () => {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900 to-slate-800"></div>
         )}
-        <div className="absolute inset-0 bg-slate-900 bg-opacity-60"></div>
+        <div className="absolute inset-0 bg-slate-900 bg-opacity-40"></div>
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-4 sm:px-6">
           <p className="text-amber-400 text-xs sm:text-sm font-medium tracking-widest mb-3 sm:mb-4">{t("home.brandSub")}</p>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white mb-3 sm:mb-4 tracking-tight drop-shadow-lg">{t("home.heroTitle")}</h1>
