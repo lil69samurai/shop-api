@@ -287,6 +287,16 @@ const AdminProductsPage = () => {
           </div>
         )}
 
+        {/* Variants Management Modal */}
+        {showVariantsModal && currentProduct && (
+          <AdminVariantsModal
+            productId={currentId}
+            productName={currentProduct.name}
+            onClose={closeModal}
+            onChanged={fetchData}
+          />
+        )}
+
         {/* Multi Image Management Modal */}
         {showMultiImageModal && (
           <div className="fixed inset-0 bg-slate-900 bg-opacity-70 flex justify-center items-center z-50 p-4">
