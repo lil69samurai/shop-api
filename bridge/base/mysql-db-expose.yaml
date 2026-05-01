@@ -1,0 +1,21 @@
+#! mysql-db-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: mysql-db
+    namespace: shop-api
+    labels:
+        com.docker.compose.project: shop-api
+        com.docker.compose.service: mysql-db
+spec:
+    selector:
+        com.docker.compose.project: shop-api
+        com.docker.compose.service: mysql-db
+    ports:
+        - name: mysql-db-3306
+          port: 3306
+          targetPort: mysql-db-3306
+        - name: mysql-db-33060
+          port: 33060
+          targetPort: mysql-db-33060

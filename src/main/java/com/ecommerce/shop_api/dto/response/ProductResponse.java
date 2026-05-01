@@ -22,6 +22,11 @@ public class ProductResponse {
     private Long categoryId;
     private String categoryName;
 
+    // SKU / 規格系統
+    private java.util.List<ProductOptionResponse> options;
+    private java.util.List<ProductVariantResponse> variants;
+    private Boolean hasVariants;  // 前端方便判斷：是否有自訂規格（非僅預設）
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

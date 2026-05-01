@@ -27,6 +27,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
+    private final ProductVariantService productVariantService;
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
@@ -235,8 +236,16 @@ public class ProductService {
                 .status(product.getStatus().name())
                 .categoryId(product.getCategory().getId())
                 .categoryName(product.getCategory().getName())
+                .options(productVariantService.getOptions(product.getId()))
+                .variants(productVariantService.getVariants(product.getId()))
+                .hasVariants(hasNonDefaultVariants(product.getId()))
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
+    }
+
+    private boolean hasNonDefaultVariants(Long productId) {
+        var variants = productVariantService.getVariants(productId);
+        return variants.stream().anyMatch(v -> v.getIsDefault() == null || !v.getIsDefault());
     }
 }

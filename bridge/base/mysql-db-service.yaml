@@ -1,0 +1,21 @@
+# check if there is at least one published port
+
+#! mysql-db-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: mysql-db-published
+    namespace: shop-api
+    labels:
+        com.docker.compose.project: shop-api
+        com.docker.compose.service: mysql-db
+spec:
+    selector:
+        com.docker.compose.project: shop-api
+        com.docker.compose.service: mysql-db
+    ports:
+        - name: mysql-db-3307
+          port: 3307
+          protocol: TCP
+          targetPort: mysql-db-3306

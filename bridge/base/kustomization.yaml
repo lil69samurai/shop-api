@@ -1,0 +1,11 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-shop-api-namespace.yaml
+    - default-network-policy.yaml
+    - mysql-db-deployment.yaml
+    - mysql-db-expose.yaml
+    - mysql-db-mysql-data-persistentVolumeClaim.yaml
+    - mysql-db-service.yaml

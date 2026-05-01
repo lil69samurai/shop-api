@@ -49,6 +49,18 @@ public class Product {
     @Builder.Default
     private List<ProductImage> images = new ArrayList<>();
 
+    // 規格屬性 (SKU 系統)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
+    @Builder.Default
+    private List<ProductOption> options = new ArrayList<>();
+
+    // 規格組合 (Variants)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
+    @Builder.Default
+    private List<ProductVariant> variants = new ArrayList<>();
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

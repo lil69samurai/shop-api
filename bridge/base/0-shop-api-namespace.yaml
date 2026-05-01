@@ -1,0 +1,8 @@
+#! 0-shop-api-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: shop-api
+    labels:
+        com.docker.compose.project: shop-api
