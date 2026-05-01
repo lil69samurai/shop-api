@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import * as productApi from '../api/productApi';
 import * as categoryApi from '../api/categoryApi';
 import { getImageSrc } from '../utils/config';
+import AdminVariantsModal from './AdminVariantsModal';
 
 const getArray = (res) => {
   if (!res) return [];
@@ -31,6 +32,7 @@ const AdminProductsPage = () => {
   const [multiPreviews, setMultiPreviews] = useState([]);
   const [deletingImageId, setDeletingImageId] = useState(null);
   const [reorderingImage, setReorderingImage] = useState(false);
+  const [showVariantsModal, setShowVariantsModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '', price: '', stock: '', categoryId: '' });
 
   useEffect(() => { fetchData(); }, []);
@@ -91,12 +93,15 @@ const AdminProductsPage = () => {
     setImageFile(null); setImagePreview(null); setShowImageModal(true);
     setFormData({ name: p.name, description: p.description, price: p.price, stock: p.stock, categoryId: p.category?.id || p.categoryId || '' });
   };
+  const openVariantsModal = (p) => {
+    setCurrentId(p.id); setCurrentProduct(p); setShowVariantsModal(true);
+  };
   const openMultiImageModal = (p) => {
     setCurrentId(p.id); setCurrentProduct(p);
     setMultiFiles(null); setMultiPreviews([]); setShowMultiImageModal(true);
   };
   const closeModal = () => {
-    setShowEditModal(false); setShowImageModal(false); setShowMultiImageModal(false);
+    setShowEditModal(false); setShowImageModal(false); setShowMultiImageModal(false); setShowVariantsModal(false);
     setImagePreview(null); setMultiPreviews([]);
   };
 
@@ -220,6 +225,7 @@ const AdminProductsPage = () => {
                       <button onClick={()=>openEditModal(p)} className="text-xs py-1 bg-slate-100 border border-slate-300 font-bold rounded">{"\u4FEE\u6539"}</button>
                       <button onClick={()=>openImageModal(p)} className="text-xs py-1 bg-amber-50 border border-amber-300 text-amber-700 font-bold rounded">{"\u4E3B\u5716\u4E0A\u50B3"}</button>
                       <button onClick={()=>openMultiImageModal(p)} className="text-xs py-1 bg-blue-50 border border-blue-300 text-blue-700 font-bold rounded">{"\u5716\u7247\u7BA1\u7406"}</button>
+                      <button onClick={()=>openVariantsModal(p)} className="text-xs py-1 bg-purple-50 border border-purple-300 text-purple-700 font-bold rounded">{"\u898F\u683C\u7BA1\u7406"}</button>
                       <button onClick={()=>handleDelete(p.id)} className="text-xs py-1 bg-red-50 border border-red-200 text-red-600 font-bold rounded">{"\u522A\u9664"}</button>
                     </div>
                   </td>
