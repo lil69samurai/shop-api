@@ -31,3 +31,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 環境變數（本機實際值，勿提交）
+.env
+.env.local
+!.env.example
+
+# Bridge / Kustomize（K8s 設定，本機用）
+bridge/
