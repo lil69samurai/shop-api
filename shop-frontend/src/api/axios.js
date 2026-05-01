@@ -61,7 +61,6 @@ api.interceptors.response.use(
 
 /**
  * 主動喚醒後端（適用於進入需要 API 的頁面前先 ping 一下）
- * 例：登入頁可以在背景呼叫此函式，等使用者真的按登入時後端已經醒了
  */
 export const wakeUpBackend = async () => {
   try {
