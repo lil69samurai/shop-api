@@ -28,6 +28,21 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    // Optional: variant reference for SKU-based purchase
+    // 可選：購買的規格 (SKU)。可為 null 以相容無規格商品
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_variant_id")
+    private ProductVariant productVariant;
+
+    // SKU snapshot at purchase time
+    // 下單當下的 SKU 快照（即使日後修改規格名稱，訂單仍保留原始資訊）
+    @Column(name = "sku", length = 100)
+    private String sku;
+
+    // Variant display name snapshot e.g. "サイズ:39 / 色:赤"
+    @Column(name = "variant_name", length = 255)
+    private String variantName;
+
     @Column(nullable = false)
     private Integer quantity;
 

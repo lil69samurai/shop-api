@@ -8,11 +8,15 @@ import com.ecommerce.shop_api.dto.response.OrderResponse;
 import com.ecommerce.shop_api.entity.Order;
 import com.ecommerce.shop_api.entity.OrderItem;
 import com.ecommerce.shop_api.entity.Product;
+import com.ecommerce.shop_api.entity.ProductOption;
+import com.ecommerce.shop_api.entity.ProductOptionValue;
+import com.ecommerce.shop_api.entity.ProductVariant;
 import com.ecommerce.shop_api.entity.User;
 import com.ecommerce.shop_api.enums.OrderStatus;
 import com.ecommerce.shop_api.exception.ResourceNotFoundException;
 import com.ecommerce.shop_api.repository.OrderRepository;
 import com.ecommerce.shop_api.repository.ProductRepository;
+import com.ecommerce.shop_api.repository.ProductVariantRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,12 +25,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final ProductVariantRepository productVariantRepository;
 
     // Allowed status transitions map
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = new HashMap<>();
@@ -50,25 +56,71 @@ public class OrderService {
                             "Product not found | 商品が見つかりません: ID " + itemRequest.getProductId()
                     ));
 
-            if (product.getStock() < itemRequest.getQuantity()) {
-                throw new RuntimeException(
-                        "Insufficient stock for product | 商品の在庫が不足しています: " + product.getName() +
-                                " (Available | 在庫数: " + product.getStock() +
-                                ", Requested | 注文数: " + itemRequest.getQuantity() + ")"
-                );
+            ProductVariant variant = null;
+            BigDecimal unitPrice;
+            int currentStock;
+            String sku = null;
+            String variantName = null;
+
+            if (itemRequest.getProductVariantId() != null) {
+                variant = productVariantRepository.findById(itemRequest.getProductVariantId())
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                "Variant not found | 規格が見つかりません: ID " + itemRequest.getProductVariantId()
+                        ));
+
+                if (!variant.getProduct().getId().equals(product.getId())) {
+                    throw new RuntimeException(
+                            "Variant does not belong to this product | 規格が商品と一致しません"
+                    );
+                }
+
+                if (variant.getStatus() != null && !"ACTIVE".equalsIgnoreCase(variant.getStatus())) {
+                    throw new RuntimeException(
+                            "Variant is not available | この規格は販売停止中です: " + variant.getSku()
+                    );
+                }
+
+                currentStock = variant.getStock() == null ? 0 : variant.getStock();
+                if (currentStock < itemRequest.getQuantity()) {
+                    throw new RuntimeException(
+                            "Insufficient stock for variant | 規格の在庫が不足しています: " + variant.getSku() +
+                                    " (Available | 在庫数: " + currentStock +
+                                    ", Requested | 注文数: " + itemRequest.getQuantity() + ")"
+                    );
+                }
+
+                variant.setStock(currentStock - itemRequest.getQuantity());
+                productVariantRepository.save(variant);
+
+                unitPrice = variant.getPrice();
+                sku = variant.getSku();
+                variantName = buildVariantName(variant);
+            } else {
+                currentStock = product.getStock() == null ? 0 : product.getStock();
+                if (currentStock < itemRequest.getQuantity()) {
+                    throw new RuntimeException(
+                            "Insufficient stock for product | 商品の在庫が不足しています: " + product.getName() +
+                                    " (Available | 在庫数: " + currentStock +
+                                    ", Requested | 注文数: " + itemRequest.getQuantity() + ")"
+                    );
+                }
+
+                product.setStock(currentStock - itemRequest.getQuantity());
+                productRepository.save(product);
+
+                unitPrice = product.getPrice();
             }
 
-            product.setStock(product.getStock() - itemRequest.getQuantity());
-            productRepository.save(product);
-
-            BigDecimal subtotal = product.getPrice()
-                    .multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
+            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
             totalAmount = totalAmount.add(subtotal);
 
             OrderItem orderItem = OrderItem.builder()
                     .product(product)
+                    .productVariant(variant)
+                    .sku(sku)
+                    .variantName(variantName)
                     .quantity(itemRequest.getQuantity())
-                    .priceAtPurchase(product.getPrice())
+                    .priceAtPurchase(unitPrice)
                     .build();
 
             orderItems.add(orderItem);
@@ -176,9 +228,7 @@ public class OrderService {
         }
 
         for (OrderItem item : order.getItems()) {
-            Product product = item.getProduct();
-            product.setStock(product.getStock() + item.getQuantity());
-            productRepository.save(product);
+            restoreStock(item);
         }
 
         orderRepository.delete(order);
@@ -205,9 +255,7 @@ public class OrderService {
         // If cancelling, restore stock
         if (newStatus == OrderStatus.CANCELLED) {
             for (OrderItem item : order.getItems()) {
-                Product product = item.getProduct();
-                product.setStock(product.getStock() + item.getQuantity());
-                productRepository.save(product);
+                restoreStock(item);
             }
         }
 
@@ -216,12 +264,50 @@ public class OrderService {
         return mapToResponse(updated);
     }
 
+    // ============================================================
+    // Helpers
+    // ============================================================
+
+    private void restoreStock(OrderItem item) {
+        if (item.getProductVariant() != null) {
+            ProductVariant variant = productVariantRepository.findById(item.getProductVariant().getId())
+                    .orElse(null);
+            if (variant != null) {
+                int s = variant.getStock() == null ? 0 : variant.getStock();
+                variant.setStock(s + item.getQuantity());
+                productVariantRepository.save(variant);
+                return;
+            }
+        }
+        Product product = item.getProduct();
+        int s = product.getStock() == null ? 0 : product.getStock();
+        product.setStock(s + item.getQuantity());
+        productRepository.save(product);
+    }
+
+    private String buildVariantName(ProductVariant variant) {
+        if (variant.getOptionValues() == null || variant.getOptionValues().isEmpty()) {
+            return null;
+        }
+        return variant.getOptionValues().stream()
+                .map(v -> {
+                    ProductOption opt = v.getOption();
+                    String name = opt != null && opt.getNameJa() != null ? opt.getNameJa() : "";
+                    String val = v.getValueJa() != null ? v.getValueJa() : "";
+                    return name + ":" + val;
+                })
+                .collect(Collectors.joining(" / "));
+    }
+
     private OrderResponse mapToResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
                         .id(item.getId())
                         .productId(item.getProduct().getId())
                         .productName(item.getProduct().getName())
+                        .productVariantId(item.getProductVariant() != null ? item.getProductVariant().getId() : null)
+                        .sku(item.getSku())
+                        .variantName(item.getVariantName())
                         .quantity(item.getQuantity())
                         .priceAtPurchase(item.getPriceAtPurchase())
                         .subtotal(item.getPriceAtPurchase()
