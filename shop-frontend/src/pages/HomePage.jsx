@@ -243,11 +243,6 @@ const HomePage = () => {
                     <div className="absolute inset-0 bg-slate-900/40 group-hover:bg-slate-900/30 transition-all"></div>
                     <div className="relative z-10 h-full flex flex-col justify-end p-3 sm:p-4">
                       <h3 className="font-bold text-sm sm:text-base text-white drop-shadow-lg">{cat.name}</h3>
-                      {cat.description && (
-                        <p className="text-xs text-slate-200 mt-0.5 line-clamp-1 drop-shadow hidden sm:block">
-                          {cat.description}
-                        </p>
-                      )}
                     </div>
                   </Link>
                 );

@@ -299,13 +299,15 @@ const ProductsPage = () => {
                   </div>
                 )}
                 <div className="p-4">
-                  <div className="flex justify-between items-start">
-                    <h2 className="text-lg font-bold text-slate-800">{product.name}</h2>
-                    {product.categoryName && (
-                      <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">{product.categoryName}</span>
-                    )}
-                  </div>
-                  <p className="text-stone-500 mt-1 text-sm line-clamp-2">{product.description}</p>
+                  {product.categoryName && (
+                    <div className="mb-2">
+                      <span className="inline-block text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                        {product.categoryName}
+                      </span>
+                    </div>
+                  )}
+                  <h2 className="text-lg font-bold text-slate-800 truncate">{product.name}</h2>
+                  <p className="text-stone-500 mt-1 text-sm truncate">{product.description}</p>
                   <div className="mt-3 flex justify-between items-center">
                     <p className="text-amber-600 font-bold text-lg">¥{Number(product.price).toLocaleString()}</p>
                     <p className="text-sm text-stone-400">
