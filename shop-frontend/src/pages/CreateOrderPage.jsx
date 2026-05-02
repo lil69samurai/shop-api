@@ -49,7 +49,7 @@ const CreateOrderPage = () => {
     setError(""); setSubmitting(true);
     try {
       const orderData = {
-        items: cartItems.map((item) => ({ productId: item.id, quantity: item.quantity })),
+        items: cartItems.map((item) => ({ productId: item.id, productVariantId: item.productVariantId || null, quantity: item.quantity })),
         recipientName: form.recipientName.trim(), phone: form.phone.trim(),
         zipCode: form.zipCode.trim(), address: form.address.trim(),
         paymentMethod: form.paymentMethod, note: form.note.trim(),
@@ -129,8 +129,12 @@ const CreateOrderPage = () => {
         <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 sm:p-6">
           <h2 className="text-lg font-bold text-slate-800 mb-4 pb-3 border-b border-stone-100">{t("order.cartContent")}</h2>
           <div className="space-y-2">{cartItems.map((item) => (
-            <div key={item.id} className="flex justify-between text-sm py-2">
-              <span className="text-slate-700 truncate flex-1 mr-2">{item.name} <span className="text-stone-400">x{item.quantity}</span></span>
+            <div key={item.cartItemKey || item.id} className="flex justify-between text-sm py-2">
+              <span className="text-slate-700 truncate flex-1 mr-2">
+                {item.name}
+                {item.variantName ? <span className="text-stone-400"> ({item.variantName})</span> : null}
+                <span className="text-stone-400"> x{item.quantity}</span>
+              </span>
               <span className="font-medium text-slate-800 flex-shrink-0">¥{(item.price * item.quantity).toFixed(0)}</span></div>))}</div>
           <div className="border-t border-stone-100 mt-3 pt-3 flex justify-between font-bold text-lg">
             <span>{t("order.total")}</span><span className="text-amber-600">¥{cartTotal.toFixed(0)}</span></div></div>
@@ -155,9 +159,13 @@ const CreateOrderPage = () => {
               <div><p className="font-bold text-slate-800">{selectedPayment?.label}</p>{selectedPayment?.desc && <p className="text-xs text-stone-500">{selectedPayment?.desc}</p>}</div></div></div>
           <div><h3 className="text-sm font-bold text-amber-600 mb-3">{t("order.orderItems")}</h3>
             <div className="space-y-2">{cartItems.map((item) => (
-              <div key={item.id} className="flex justify-between items-center bg-stone-50 rounded-lg p-3">
-                <div className="flex-1 min-w-0 mr-2"><p className="font-medium text-slate-800 text-sm truncate">{item.name}</p>
-                  <p className="text-xs text-stone-500">¥{item.price} × {item.quantity}</p></div>
+              <div key={item.cartItemKey || item.id} className="flex justify-between items-center bg-stone-50 rounded-lg p-3">
+                <div className="flex-1 min-w-0 mr-2">
+                  <p className="font-medium text-slate-800 text-sm truncate">{item.name}</p>
+                  {item.variantName && <p className="text-xs text-slate-500 truncate">{item.variantName}</p>}
+                  {item.sku && <p className="text-xs text-slate-400 font-mono truncate">{item.sku}</p>}
+                  <p className="text-xs text-stone-500">¥{item.price} × {item.quantity}</p>
+                </div>
                 <p className="font-bold text-slate-800 flex-shrink-0">¥{(item.price * item.quantity).toFixed(0)}</p></div>))}</div></div></div>
 
         <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-4 sm:p-6"><div className="space-y-2">

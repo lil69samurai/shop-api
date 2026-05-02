@@ -124,7 +124,9 @@
     "checkout": "前往結帳",
     "loginRequired": "請先登入",
     "cartName": "購物車",
-    "itemTypes": "種商品"
+    "itemTypes": "種商品",
+    "sku": "SKU",
+    "variant": "規格"
   },
   "order": {
     "step1": "收件資訊・付款方式",

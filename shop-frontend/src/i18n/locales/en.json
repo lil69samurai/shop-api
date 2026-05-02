@@ -124,7 +124,9 @@
     "checkout": "Checkout",
     "loginRequired": "Please login first",
     "cartName": "Shopping Cart",
-    "itemTypes": "items"
+    "itemTypes": "items",
+    "sku": "SKU",
+    "variant": "Variant"
   },
   "order": {
     "step1": "Shipping & Payment",

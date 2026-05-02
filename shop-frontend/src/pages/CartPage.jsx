@@ -20,14 +20,14 @@ const CartPage = () => {
     navigate("/orders/create");
   };
 
-  const handleQuantityChange = (id, delta, currentQty, maxStock) => {
+  const handleQuantityChange = (cartItemKey, delta, currentQty, maxStock) => {
     const newQty = currentQty + delta;
     if (newQty < 1) return;
     if (maxStock && newQty > maxStock) {
       toast.warning(t("cart.stockLimit"));
       return;
     }
-    updateQuantity(id, newQty);
+    updateQuantity(cartItemKey, newQty);
   };
 
   if (cartItems.length === 0) {
@@ -55,98 +55,141 @@ const CartPage = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-slate-800">{t("cart.cartName")}</h1>
             <p className="text-sm text-stone-400 mt-1">{cartItems.length}{t("cart.itemTypes")}</p>
           </div>
-          <button onClick={() => { if (window.confirm(t("cart.clearConfirm"))) clearCart(); }}
-            className="text-sm text-red-500 hover:text-red-700 px-3 py-1 bg-red-50 rounded-lg transition">
+          <button
+            onClick={() => { if (window.confirm(t("cart.clearConfirm"))) clearCart(); }}
+            className="text-sm text-red-500 hover:text-red-700 px-3 py-1 bg-red-50 rounded-lg transition"
+          >
             {t("cart.clearCart")}
           </button>
         </div>
 
         <div className="space-y-4">
-          {cartItems.map((item) => (
-            <div key={item.id} className="bg-white border border-stone-100 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-              {/* Desktop layout */}
-              <div className="hidden sm:flex items-center p-4 gap-4">
-                <Link to={"/products/" + item.id} className="flex-shrink-0">
-                  {item.imageUrl ? (
-                    <img src={getImageSrc(item.imageUrl)} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
-                  ) : (
-                    <div className="w-20 h-20 bg-stone-100 rounded-lg flex items-center justify-center text-stone-300">
-                      <span className="text-2xl">🖼️</span>
-                    </div>
-                  )}
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <Link to={"/products/" + item.id}>
-                    <h3 className="text-lg font-bold text-slate-800 hover:text-amber-600 transition truncate">{item.name}</h3>
-                  </Link>
-                  <p className="text-amber-600 font-bold mt-1">¥{Number(item.price).toLocaleString()}</p>
-                  {item.categoryName && (
-                    <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{item.categoryName}</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => handleQuantityChange(item.id, -1, item.quantity)}
-                    className="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-slate-700 font-bold transition text-lg">−</button>
-                  <input type="number" min="1" value={item.quantity}
-                    onChange={(e) => updateQuantity(item.id, Math.max(1, Number(e.target.value)))}
-                    className="w-14 h-9 border border-stone-200 text-center rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                  <button onClick={() => handleQuantityChange(item.id, 1, item.quantity, item.stockQuantity || item.stock)}
-                    className="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-slate-700 font-bold transition text-lg">+</button>
-                </div>
-                <div className="w-28 text-right flex-shrink-0">
-                  <p className="font-bold text-lg text-slate-800">¥{(item.price * item.quantity).toLocaleString()}</p>
-                </div>
-                <button onClick={() => removeFromCart(item.id)}
-                  className="flex-shrink-0 w-9 h-9 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 hover:text-red-700 transition">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Mobile layout - card style */}
-              <div className="sm:hidden p-4">
-                <div className="flex gap-3 mb-3">
+          {cartItems.map((item) => {
+            const stockLimit = item.stockQuantity || item.stock;
+            return (
+              <div key={item.cartItemKey} className="bg-white border border-stone-100 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+                {/* Desktop layout */}
+                <div className="hidden sm:flex items-center p-4 gap-4">
                   <Link to={"/products/" + item.id} className="flex-shrink-0">
                     {item.imageUrl ? (
-                      <img src={getImageSrc(item.imageUrl)} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
+                      <img src={getImageSrc(item.imageUrl)} alt={item.name} className="w-20 h-20 object-cover rounded-lg" />
                     ) : (
-                      <div className="w-16 h-16 bg-stone-100 rounded-lg flex items-center justify-center text-stone-300">
-                        <span className="text-xl">🖼️</span>
+                      <div className="w-20 h-20 bg-stone-100 rounded-lg flex items-center justify-center text-stone-300">
+                        <span className="text-2xl">🖼️</span>
                       </div>
                     )}
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link to={"/products/" + item.id}>
-                      <h3 className="font-bold text-slate-800 hover:text-amber-600 transition truncate text-sm">{item.name}</h3>
+                      <h3 className="text-lg font-bold text-slate-800 hover:text-amber-600 transition truncate">{item.name}</h3>
                     </Link>
-                    <p className="text-amber-600 font-bold text-sm mt-0.5">¥{Number(item.price).toLocaleString()}</p>
+                    {item.variantName && (
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        <span className="font-bold">{t("cart.variant")}:</span> {item.variantName}
+                      </p>
+                    )}
+                    {item.sku && (
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        <span className="font-bold">{t("cart.sku")}:</span> <span className="font-mono">{item.sku}</span>
+                      </p>
+                    )}
+                    <p className="text-amber-600 font-bold mt-1">¥{Number(item.price).toLocaleString()}</p>
                     {item.categoryName && (
                       <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{item.categoryName}</span>
                     )}
                   </div>
-                  <button onClick={() => removeFromCart(item.id)}
-                    className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 self-start">
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleQuantityChange(item.cartItemKey, -1, item.quantity)}
+                      className="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-slate-700 font-bold transition text-lg"
+                    >−</button>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => updateQuantity(item.cartItemKey, Math.max(1, Number(e.target.value)))}
+                      className="w-14 h-9 border border-stone-200 text-center rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <button
+                      onClick={() => handleQuantityChange(item.cartItemKey, 1, item.quantity, stockLimit)}
+                      className="w-9 h-9 rounded-lg bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-slate-700 font-bold transition text-lg"
+                    >+</button>
+                  </div>
+                  <div className="w-28 text-right flex-shrink-0">
+                    <p className="font-bold text-lg text-slate-800">¥{(item.price * item.quantity).toLocaleString()}</p>
+                  </div>
+                  <button
+                    onClick={() => removeFromCart(item.cartItemKey)}
+                    className="flex-shrink-0 w-9 h-9 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 hover:text-red-700 transition"
+                  >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
                 </div>
-                <div className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2">
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => handleQuantityChange(item.id, -1, item.quantity)}
-                      className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-slate-700 font-bold text-lg">−</button>
-                    <input type="number" min="1" value={item.quantity}
-                      onChange={(e) => updateQuantity(item.id, Math.max(1, Number(e.target.value)))}
-                      className="w-12 h-8 border border-stone-200 text-center rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400" />
-                    <button onClick={() => handleQuantityChange(item.id, 1, item.quantity, item.stockQuantity || item.stock)}
-                      className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-slate-700 font-bold text-lg">+</button>
+
+                {/* Mobile layout - card style */}
+                <div className="sm:hidden p-4">
+                  <div className="flex gap-3 mb-3">
+                    <Link to={"/products/" + item.id} className="flex-shrink-0">
+                      {item.imageUrl ? (
+                        <img src={getImageSrc(item.imageUrl)} alt={item.name} className="w-16 h-16 object-cover rounded-lg" />
+                      ) : (
+                        <div className="w-16 h-16 bg-stone-100 rounded-lg flex items-center justify-center text-stone-300">
+                          <span className="text-xl">🖼️</span>
+                        </div>
+                      )}
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <Link to={"/products/" + item.id}>
+                        <h3 className="font-bold text-slate-800 hover:text-amber-600 transition truncate text-sm">{item.name}</h3>
+                      </Link>
+                      {item.variantName && (
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
+                          {item.variantName}
+                        </p>
+                      )}
+                      {item.sku && (
+                        <p className="text-xs text-slate-400 mt-0.5 font-mono truncate">{item.sku}</p>
+                      )}
+                      <p className="text-amber-600 font-bold text-sm mt-0.5">¥{Number(item.price).toLocaleString()}</p>
+                      {item.categoryName && (
+                        <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{item.categoryName}</span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.cartItemKey)}
+                      className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-500 self-start"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
-                  <p className="font-bold text-slate-800">¥{(item.price * item.quantity).toLocaleString()}</p>
+                  <div className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleQuantityChange(item.cartItemKey, -1, item.quantity)}
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-slate-700 font-bold text-lg"
+                      >−</button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateQuantity(item.cartItemKey, Math.max(1, Number(e.target.value)))}
+                        className="w-12 h-8 border border-stone-200 text-center rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                      <button
+                        onClick={() => handleQuantityChange(item.cartItemKey, 1, item.quantity, stockLimit)}
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-200 flex items-center justify-center text-slate-700 font-bold text-lg"
+                      >+</button>
+                    </div>
+                    <p className="font-bold text-slate-800">¥{(item.price * item.quantity).toLocaleString()}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Summary */}
