@@ -15,16 +15,17 @@ public class ProductOptionRequest {
     private String nameEn;
     private Integer sortOrder;
 
-    // 屬性值清單
     private List<OptionValueRequest> values;
 
     @Data
     public static class OptionValueRequest {
-        private Long id; // 編輯時使用
+        private Long id;
         @NotBlank(message = "Option value (ja) can not be empty.")
         private String valueJa;
         private String valueZh;
         private String valueEn;
+        // Admin 自填代號，例：BLK / WHT / 39
+        private String code;
         private Integer sortOrder;
     }
 }

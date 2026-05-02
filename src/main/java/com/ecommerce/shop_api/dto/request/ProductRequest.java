@@ -14,6 +14,9 @@ public class ProductRequest {
     @NotBlank(message = "Product's name can not be empty.")
     private String name;
 
+    // 可空，後端會自動生成 P0001 流水號
+    private String productCode;
+
     private String description;
 
     @NotNull(message = "Product's price can not be empty.")

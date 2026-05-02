@@ -28,14 +28,23 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductImageRepository productImageRepository;
     private final ProductVariantService productVariantService;
+    private final CodeGeneratorService codeGeneratorService;
 
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Can't find Category ID: " + request.getCategoryId()));
 
+        String productCode = request.getProductCode() == null ? null : request.getProductCode().trim().toUpperCase();
+        if (productCode == null || productCode.isBlank()) {
+            productCode = codeGeneratorService.generateProductCode();
+        } else if (productRepository.existsByProductCode(productCode)) {
+            throw new RuntimeException("Product code already exist: " + productCode);
+        }
+
         Product product = Product.builder()
                 .name(request.getName())
+                .productCode(productCode)
                 .description(request.getDescription())
                 .price(request.getPrice())
                 .stock(request.getStock())
@@ -226,6 +235,7 @@ public class ProductService {
 
         return ProductResponse.builder()
                 .id(product.getId())
+                .productCode(product.getProductCode())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())

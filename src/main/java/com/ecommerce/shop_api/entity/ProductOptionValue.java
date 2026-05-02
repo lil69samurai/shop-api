@@ -22,6 +22,10 @@ public class ProductOptionValue {
     @JoinColumn(name = "option_id", nullable = false)
     private ProductOption option;
 
+    // 屬性值代號（Admin 自填，例：BLK / WHT / 39）
+    @Column(name = "code", length = 32)
+    private String code;
+
     @Column(name = "value_ja", nullable = false, length = 100)
     private String valueJa;
 

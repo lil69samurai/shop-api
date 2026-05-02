@@ -11,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    boolean existsByProductCode(String productCode);
+    java.util.Optional<Product> findTopByProductCodeStartingWithOrderByProductCodeDesc(String prefix);
+
     Page<Product> findByCategoryId(Long categoryId, Pageable pageable);
     Page<Product> findByStatus(ProductStatus status, Pageable pageable);
 

@@ -31,6 +31,7 @@ public class ProductVariantService {
     private final ProductOptionRepository optionRepository;
     private final ProductOptionValueRepository optionValueRepository;
     private final ProductVariantRepository variantRepository;
+    private final CodeGeneratorService codeGeneratorService;
 
     // ====================================================
     // Option (屬性) CRUD
@@ -66,6 +67,7 @@ public class ProductVariantService {
                         .valueJa(valReq.getValueJa())
                         .valueZh(valReq.getValueZh())
                         .valueEn(valReq.getValueEn())
+                        .code(valReq.getCode())
                         .sortOrder(valReq.getSortOrder() != null ? valReq.getSortOrder() : i)
                         .build();
                 optionValueRepository.save(value);
@@ -97,6 +99,7 @@ public class ProductVariantService {
                         .valueJa(valReq.getValueJa())
                         .valueZh(valReq.getValueZh())
                         .valueEn(valReq.getValueEn())
+                        .code(valReq.getCode())
                         .sortOrder(valReq.getSortOrder() != null ? valReq.getSortOrder() : i)
                         .build();
                 optionValueRepository.save(value);
@@ -129,28 +132,38 @@ public class ProductVariantService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
-        if (variantRepository.existsByProductIdAndSku(productId, request.getSku())) {
-            throw new RuntimeException("SKU already exists: " + request.getSku());
-        }
-
-        Set<ProductOptionValue> optionValues = new HashSet<>();
+        // 收集 optionValues 與其 code，後面用於 SKU 自動生成
+        Set<ProductOptionValue> optionValuesPre = new HashSet<>();
+        java.util.List<String> valueCodes = new java.util.ArrayList<>();
         if (request.getOptionValueIds() != null) {
             for (Long valueId : request.getOptionValueIds()) {
-                ProductOptionValue value = optionValueRepository.findById(valueId)
+                ProductOptionValue v = optionValueRepository.findById(valueId)
                         .orElseThrow(() -> new ResourceNotFoundException("Option value not found: " + valueId));
-                optionValues.add(value);
+                optionValuesPre.add(v);
+                valueCodes.add(v.getCode() != null && !v.getCode().isBlank() ? v.getCode() : v.getValueJa());
             }
+        }
+
+        String sku = request.getSku();
+        if (sku == null || sku.trim().isEmpty()) {
+            sku = codeGeneratorService.generateSku(product.getProductCode(), valueCodes);
+        } else {
+            sku = sku.trim();
+        }
+
+        if (variantRepository.existsByProductIdAndSku(productId, sku)) {
+            throw new RuntimeException("SKU already exists: " + sku);
         }
 
         ProductVariant variant = ProductVariant.builder()
                 .product(product)
-                .sku(request.getSku())
+                .sku(sku)
                 .price(request.getPrice())
                 .stock(request.getStock())
                 .status(request.getStatus() != null ? request.getStatus() : "ACTIVE")
                 .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
                 .isDefault(false)
-                .optionValues(optionValues)
+                .optionValues(optionValuesPre)
                 .build();
 
         ProductVariant saved = variantRepository.save(variant);
@@ -210,6 +223,7 @@ public class ProductVariantService {
                         .valueJa(v.getValueJa())
                         .valueZh(v.getValueZh())
                         .valueEn(v.getValueEn())
+                        .code(v.getCode())
                         .sortOrder(v.getSortOrder())
                         .build())
                 .collect(Collectors.toList());

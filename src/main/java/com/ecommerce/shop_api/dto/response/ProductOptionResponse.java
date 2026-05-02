@@ -22,6 +22,7 @@ public class ProductOptionResponse {
         private String valueJa;
         private String valueZh;
         private String valueEn;
+        private String code;
         private Integer sortOrder;
     }
 }

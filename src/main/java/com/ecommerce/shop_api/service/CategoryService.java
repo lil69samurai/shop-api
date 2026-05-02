@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,17 +16,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CodeGeneratorService codeGeneratorService;
 
-    // Build Category.
     @Transactional
     public CategoryResponse createCategory(CategoryRequest request) {
-        // Check if the name is double.
         if (categoryRepository.existsByName(request.getName())) {
             throw new RuntimeException("Category name already exist");
         }
 
+        String code = request.getCode() == null ? null : request.getCode().trim().toUpperCase();
+        if (code == null || code.isBlank()) {
+            code = codeGeneratorService.generateCategoryCode(request.getName());
+        } else if (categoryRepository.existsByCode(code)) {
+            throw new RuntimeException("Category code already exist: " + code);
+        }
+
         Category category = Category.builder()
                 .name(request.getName())
+                .code(code)
                 .description(request.getDescription())
                 .build();
 
@@ -35,7 +41,6 @@ public class CategoryService {
         return mapToResponse(saved);
     }
 
-    // Get all Category
     @Transactional(readOnly = true)
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll().stream()
@@ -43,32 +48,38 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    // Get Category by ID
     @Transactional(readOnly = true)
     public CategoryResponse getCategoryById(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
         return mapToResponse(category);
-
     }
-    // Update Category
+
     @Transactional
     public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        // Check if new name already exists (but not this category)
         if (!category.getName().equals(request.getName())
                 && categoryRepository.existsByName(request.getName())) {
             throw new RuntimeException("Category name already exist");
         }
+
+        String newCode = request.getCode() == null ? null : request.getCode().trim().toUpperCase();
+        if (newCode != null && !newCode.isBlank() && !newCode.equals(category.getCode())) {
+            if (categoryRepository.existsByCode(newCode)) {
+                throw new RuntimeException("Category code already exist: " + newCode);
+            }
+            category.setCode(newCode);
+        }
+
         category.setName(request.getName());
         category.setDescription(request.getDescription());
 
         Category saved = categoryRepository.save(category);
         return mapToResponse(saved);
     }
-    // Delete Category
+
     @Transactional
     public void deleteCategory(Long id) {
         Category category = categoryRepository.findById(id)
@@ -76,11 +87,11 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-        //
     private CategoryResponse mapToResponse(Category category) {
         return CategoryResponse.builder()
                 .id(category.getId())
                 .name(category.getName())
+                .code(category.getCode())
                 .description(category.getDescription())
                 .createdAt(category.getCreatedAt())
                 .build();

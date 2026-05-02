@@ -21,6 +21,10 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // 商品代號（P001 流水號，自動生成），全站唯一
+    @Column(name = "product_code", nullable = false, unique = true, length = 32)
+    private String productCode;
+
     @Column(nullable = false)
     private String name;
 

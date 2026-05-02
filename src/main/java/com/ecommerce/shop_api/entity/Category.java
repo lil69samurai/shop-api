@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,6 +19,10 @@ public class Category {
 
     @Column(nullable = false)
     private String name;
+
+    // 分類代號（2 字母大寫，自動生成或 Admin 手動輸入），全站唯一
+    @Column(nullable = false, unique = true, length = 8)
+    private String code;
 
     private String description;
 
