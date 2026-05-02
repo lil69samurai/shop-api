@@ -110,7 +110,13 @@
     "maxPrice": "最高価格",
     "applyPrice": "適用",
     "noResults": "商品が見つかりませんでした",
-    "addToCart": "カートに入れる"
+    "addToCart": "カートに入れる",
+    "selectVariant": "規格を選択",
+    "selectVariantRequired": "先に商品の規格を選択してください",
+    "pleaseSelectVariant": "規格を選択すると在庫を確認できます",
+    "variantDataMissing": "この商品には規格データがまだ設定されていません",
+    "sku": "SKU",
+    "variant": "規格"
   },
   "cart": {
     "title": "買い物かご",

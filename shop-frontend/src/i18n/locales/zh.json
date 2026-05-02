@@ -99,7 +99,13 @@
     "priceRangeLabel": "價格範圍",
     "minPrice": "最低價",
     "maxPrice": "最高價",
-    "applyPrice": "套用"
+    "applyPrice": "套用",
+    "selectVariant": "選擇規格",
+    "selectVariantRequired": "請先選擇商品規格",
+    "pleaseSelectVariant": "請選擇規格後確認庫存",
+    "variantDataMissing": "此商品尚未設定完整規格資料",
+    "sku": "SKU",
+    "variant": "規格"
   },
   "cart": {
     "title": "購物車",

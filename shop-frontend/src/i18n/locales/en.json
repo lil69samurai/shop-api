@@ -99,7 +99,13 @@
     "priceRangeLabel": "Price Range",
     "minPrice": "Min",
     "maxPrice": "Max",
-    "applyPrice": "Apply"
+    "applyPrice": "Apply",
+    "selectVariant": "Select options",
+    "selectVariantRequired": "Please select product options first",
+    "pleaseSelectVariant": "Select options to check stock",
+    "variantDataMissing": "Variant data is not configured for this product yet",
+    "sku": "SKU",
+    "variant": "Variant"
   },
   "cart": {
     "title": "Shopping Cart",

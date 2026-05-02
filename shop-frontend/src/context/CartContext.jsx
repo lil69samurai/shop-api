@@ -19,11 +19,13 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product, quantity = 1) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
+      const stockLimit = product.stockQuantity ?? product.stock ?? 999999;
+
       if (existingItem) {
-        // If the item is already in your cart, increase the quantity (you can check the inventory limit based on product.stock).
-        const newQuantity = Math.min(existingItem.quantity + quantity, product.stockQuantity);
+        // If the item is already in your cart, increase the quantity.
+        const newQuantity = Math.min(existingItem.quantity + quantity, stockLimit);
         return prevItems.map((item) =>
-          item.id === product.id ? { ...item, quantity: newQuantity } : item
+          item.id === product.id ? { ...item, ...product, quantity: newQuantity } : item
         );
       }
       // If it's not in your cart, add it to your cart.
