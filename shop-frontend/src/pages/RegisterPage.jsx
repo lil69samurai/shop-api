@@ -51,7 +51,7 @@ const RegisterPage = () => {
     if (!validateForm()) return;
     try {
       setLoading(true);
-      await authApi.register({
+      await authApi.registerApi({
         username: formData.username, email: formData.email, password: formData.password
       });
       toast.success(t("register.success"));
