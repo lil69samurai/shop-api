@@ -10,7 +10,7 @@ const unwrap = (res) => {
   return [];
 };
 
-const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
+const AdminVariantsModal = ({ productId, productName, productCode, onClose, onChanged }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("options");
   const [options, setOptions] = useState([]);
@@ -54,13 +54,25 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
     setOptionForm(emptyOptionForm);
   };
 
+  const formatValueLine = (v) => {
+    if (!v) return "";
+    return v.code ? `${v.valueJa}|${v.code}` : (v.valueJa || "");
+  };
+
+  const parseValueLine = (line, index) => {
+    const parts = line.split("|").map((s) => s.trim());
+    const valueJa = parts[0] || "";
+    const code = parts.length > 1 ? (parts.slice(1).join("|").trim() || null) : null;
+    return { valueJa, code, sortOrder: index };
+  };
+
   const startEditOption = (opt) => {
     setEditingOption(opt);
     setOptionForm({
       nameJa: opt.nameJa || "",
       nameZh: opt.nameZh || "",
       nameEn: opt.nameEn || "",
-      valuesText: (opt.values || []).map((v) => v.valueJa).join("\n"),
+      valuesText: (opt.values || []).map(formatValueLine).join("\n"),
     });
   };
 
@@ -69,7 +81,9 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
     const valuesArr = optionForm.valuesText
       .split(/\r?\n/)
       .map((s) => s.trim())
-      .filter((s) => s.length > 0);
+      .filter((s) => s.length > 0)
+      .map(parseValueLine)
+      .filter((v) => v.valueJa.length > 0);
 
     if (!optionForm.nameJa.trim()) {
       toast.error(t("admin.variants.nameJaRequired"));
@@ -85,7 +99,7 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
       nameZh: optionForm.nameZh.trim() || null,
       nameEn: optionForm.nameEn.trim() || null,
       sortOrder: editingOption ? editingOption.sortOrder || 0 : options.length,
-      values: valuesArr.map((v, i) => ({ valueJa: v, sortOrder: i })),
+      values: valuesArr,
     };
 
     try {
@@ -145,13 +159,40 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
     }));
   };
 
+  const getSelectedValuesForSku = () => {
+    return options.map((opt) => {
+      const selectedId = variantForm.optionValueIds[opt.id];
+      const value = (opt.values || []).find((v) => String(v.id) === String(selectedId));
+      return { option: opt, value };
+    });
+  };
+
+  const generateSku = () => {
+    if (!productCode) {
+      toast.error(t("admin.variants.productCodeMissing"));
+      return;
+    }
+
+    const selected = getSelectedValuesForSku();
+    if (selected.some((item) => !item.value)) {
+      toast.error(t("admin.variants.selectAllOptionsForSku"));
+      return;
+    }
+
+    const missingCode = selected.find((item) => !item.value.code);
+    if (missingCode) {
+      toast.error(t("admin.variants.optionCodeMissing"));
+      return;
+    }
+
+    const sku = [productCode, ...selected.map((item) => item.value.code)].join("-");
+    setVariantForm((prev) => ({ ...prev, sku }));
+    toast.success(t("admin.variants.skuGenerated"));
+  };
+
   const submitVariant = async (e) => {
     e.preventDefault();
 
-    if (!variantForm.sku.trim()) {
-      toast.error(t("admin.variants.skuRequired"));
-      return;
-    }
     if (!variantForm.price || isNaN(Number(variantForm.price))) {
       toast.error(t("admin.variants.priceInvalid"));
       return;
@@ -172,7 +213,7 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
     }
 
     const payload = {
-      sku: variantForm.sku.trim(),
+      sku: variantForm.sku.trim() || null,
       price: Number(variantForm.price),
       stock: Number(variantForm.stock),
       status: "ACTIVE",
@@ -225,6 +266,7 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
         <div className="sticky top-0 bg-slate-900 text-white p-4 flex justify-between z-10">
           <h2 className="font-bold">
             {t("admin.variants.title")} - {productName}
+            {productCode ? <span className="ml-2 text-xs text-amber-300 font-mono">({productCode})</span> : null}
           </h2>
           <button onClick={onClose} className="text-2xl">{"✕"}</button>
         </div>
@@ -291,6 +333,7 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
                               className="inline-block bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded"
                             >
                               {v.valueJa}
+                              {v.code ? <span className="ml-1 font-mono text-amber-700">({v.code})</span> : null}
                             </span>
                           ))}
                         </div>
@@ -437,13 +480,25 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
                     {editingVariant ? t("admin.variants.editVariant") : t("admin.variants.addVariant")}
                   </h3>
                   <form onSubmit={submitVariant} className="space-y-3 bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <input
-                      placeholder={t("admin.variants.skuPh")}
-                      value={variantForm.sku}
-                      onChange={(e) => setVariantForm({ ...variantForm, sku: e.target.value })}
-                      className="w-full p-2 border rounded font-mono"
-                      required
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        placeholder={t("admin.variants.skuPh")}
+                        value={variantForm.sku}
+                        onChange={(e) => setVariantForm({ ...variantForm, sku: e.target.value })}
+                        className="w-full p-2 border rounded font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={generateSku}
+                        className="shrink-0 px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded hover:bg-amber-600"
+                      >
+                        {t("admin.variants.generateSku")}
+                      </button>
+                    </div>
+                    <p className="text-xs text-blue-700">
+                      {t("admin.variants.skuHint")}
+                    </p>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {options.map((opt) => (
                         <div key={opt.id}>
@@ -456,7 +511,9 @@ const AdminVariantsModal = ({ productId, productName, onClose, onChanged }) => {
                           >
                             <option value="">{t("admin.variants.selectValue")}</option>
                             {(opt.values || []).map((v) => (
-                              <option key={v.id} value={v.id}>{v.valueJa}</option>
+                              <option key={v.id} value={v.id}>
+                                {v.valueJa}{v.code ? ` (${v.code})` : ""}
+                              </option>
                             ))}
                           </select>
                         </div>

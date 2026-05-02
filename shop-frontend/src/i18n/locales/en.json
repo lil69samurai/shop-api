@@ -322,9 +322,9 @@
       "nameJaPh": "Option name (JA) e.g. サイズ",
       "nameZhPh": "Option name (ZH) e.g. 尺寸",
       "nameEnPh": "Option name (EN) e.g. Size",
-      "valuesPh": "One value per line\nExample:\n37\n38\n39",
-      "valuesHint": "Please enter one value per line.",
-      "skuPh": "SKU e.g. SHINAI-A-39",
+      "valuesPh": "One value per line. Use “Name|CODE” to set a code\\nExample:\\n37|37\\nBlack|BLK\\nWhite|WHT",
+      "valuesHint": "One value per line. Format: Name|CODE. If CODE is empty, the backend will auto-generate it.",
+      "skuPh": "SKU e.g. P0001-M-BLK. Leave blank to auto-generate",
       "selectValue": "Select",
       "priceLabel": "Price",
       "stockLabel": "Stock",
@@ -350,7 +350,13 @@
       "skuRequired": "SKU is required",
       "priceInvalid": "Invalid price",
       "stockInvalid": "Invalid stock",
-      "allOptionsRequired": "Please select all options"
+      "allOptionsRequired": "Please select all options",
+      "skuHint": "Leave blank to let the backend auto-generate, or select option values and click Generate.",
+      "generateSku": "Generate",
+      "skuGenerated": "SKU generated",
+      "productCodeMissing": "Product is missing productCode. Please save the product code first.",
+      "optionCodeMissing": "A selected option value is missing code. Please set value code first.",
+      "selectAllOptionsForSku": "Please select all option values before generating SKU"
     }
   }
 }

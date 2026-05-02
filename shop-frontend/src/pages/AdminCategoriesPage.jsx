@@ -16,7 +16,7 @@ const AdminCategoriesPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '', code: '', description: '' });
 
   useEffect(() => { fetchCategories(); }, []);
 
@@ -35,24 +35,30 @@ const AdminCategoriesPage = () => {
 
   const openAddModal = () => {
     setIsEditing(false); setCurrentId(null);
-    setFormData({ name: '', description: '' });
+    setFormData({ name: '', code: '', description: '' });
     setShowModal(true);
   };
 
   const openEditModal = (cat) => {
     setIsEditing(true); setCurrentId(cat.id);
-    setFormData({ name: cat.name, description: cat.description || '' });
+    setFormData({ name: cat.name, code: cat.code || '', description: cat.description || '' });
     setShowModal(true);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const categoryData = {
+      name: formData.name,
+      code: formData.code.trim() || null,
+      description: formData.description,
+    };
+
     try {
       if (isEditing) {
-        await categoryApi.updateCategoryApi(currentId, formData);
+        await categoryApi.updateCategoryApi(currentId, categoryData);
         toast.success('\u5206\u985E\u66F4\u65B0\u6210\u529F');
       } else {
-        await categoryApi.createCategoryApi(formData);
+        await categoryApi.createCategoryApi(categoryData);
         toast.success('\u5206\u985E\u65B0\u589E\u6210\u529F');
       }
       setShowModal(false);
@@ -99,18 +105,20 @@ const AdminCategoriesPage = () => {
               <tr className="bg-slate-900 text-stone-50 uppercase text-xs tracking-widest">
                 <th className="p-4 w-16">{"\u5E8F\u865F"}</th>
                 <th className="p-4">{"\u5206\u985E\u540D\u7A31"}</th>
+                <th className="p-4">Code</th>
                 <th className="p-4">{"\u63CF\u8FF0"}</th>
                 <th className="p-4 w-40 text-center">{"\u64CD\u4F5C"}</th>
               </tr>
             </thead>
             <tbody className="text-slate-700">
               {categories.length === 0 ? (
-                <tr><td colSpan="4" className="p-8 text-center text-slate-500">{"\u5C1A\u7121\u5206\u985E\u8CC7\u6599"}</td></tr>
+                <tr><td colSpan="5" className="p-8 text-center text-slate-500">{"\u5C1A\u7121\u5206\u985E\u8CC7\u6599"}</td></tr>
               ) : (
                 categories.map((cat, index) => (
                   <tr key={cat.id} className="border-b border-slate-100 hover:bg-stone-50 transition-colors">
                     <td className="p-4 font-bold text-slate-400">#{index + 1}</td>
                     <td className="p-4 font-bold text-slate-900">{cat.name}</td>
+                    <td className="p-4 text-sm font-mono text-slate-700">{cat.code || '-'}</td>
                     <td className="p-4 text-sm text-slate-500">{cat.description || '-'}</td>
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
@@ -140,6 +148,12 @@ const AdminCategoriesPage = () => {
                   <label className="block text-sm font-bold text-slate-700 mb-1">{"\u5206\u985E\u540D\u7A31"} <span className="text-red-500">*</span></label>
                   <input type="text" name="name" value={formData.name} onChange={handleInputChange} required
                     className="w-full p-2.5 border border-slate-300 rounded focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none bg-stone-50" placeholder={"\u4F8B\u5982\uFF1A\u7AF9\u528D\u3001\u5263\u9053\u670D..."} />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Code</label>
+                  <input type="text" name="code" value={formData.code} onChange={handleInputChange}
+                    className="w-full p-2.5 border border-slate-300 rounded focus:border-amber-500 focus:ring-2 focus:ring-amber-200 outline-none bg-stone-50 font-mono uppercase" placeholder={"例：BG。留空則自動生成"} />
+                  <p className="mt-1 text-xs text-slate-400">分類代碼需唯一，未填時後端會自動生成。</p>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">{"\u5206\u985E\u63CF\u8FF0"}</label>

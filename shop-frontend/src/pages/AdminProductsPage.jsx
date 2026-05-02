@@ -33,7 +33,7 @@ const AdminProductsPage = () => {
   const [deletingImageId, setDeletingImageId] = useState(null);
   const [reorderingImage, setReorderingImage] = useState(false);
   const [showVariantsModal, setShowVariantsModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', price: '', stock: '', categoryId: '' });
+  const [formData, setFormData] = useState({ name: '', productCode: '', description: '', price: '', stock: '', categoryId: '' });
 
   useEffect(() => { fetchData(); }, []);
 
@@ -81,17 +81,17 @@ const AdminProductsPage = () => {
   const openAddModal = () => {
     setIsEditing(false); setCurrentId(null); setCurrentProduct(null);
     setImageFile(null); setImagePreview(null); setShowEditModal(true);
-    setFormData({ name: '', description: '', price: '', stock: '', categoryId: categories.length > 0 ? categories[0].id : '' });
+    setFormData({ name: '', productCode: '', description: '', price: '', stock: '', categoryId: categories.length > 0 ? categories[0].id : '' });
   };
   const openEditModal = (p) => {
     setIsEditing(true); setCurrentId(p.id); setCurrentProduct(p);
     setImageFile(null); setImagePreview(null); setShowEditModal(true);
-    setFormData({ name: p.name, description: p.description, price: p.price, stock: p.stock, categoryId: p.category?.id || p.categoryId || '' });
+    setFormData({ name: p.name, productCode: p.productCode || '', description: p.description, price: p.price, stock: p.stock, categoryId: p.category?.id || p.categoryId || '' });
   };
   const openImageModal = (p) => {
     setIsEditing(true); setCurrentId(p.id); setCurrentProduct(p);
     setImageFile(null); setImagePreview(null); setShowImageModal(true);
-    setFormData({ name: p.name, description: p.description, price: p.price, stock: p.stock, categoryId: p.category?.id || p.categoryId || '' });
+    setFormData({ name: p.name, productCode: p.productCode || '', description: p.description, price: p.price, stock: p.stock, categoryId: p.category?.id || p.categoryId || '' });
   };
   const openVariantsModal = (p) => {
     setCurrentId(p.id); setCurrentProduct(p); setShowVariantsModal(true);
@@ -108,7 +108,7 @@ const AdminProductsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const productData = { name: formData.name, description: formData.description, price: Number(formData.price), stock: Number(formData.stock), categoryId: Number(formData.categoryId) };
+      const productData = { name: formData.name, productCode: formData.productCode.trim() || null, description: formData.description, price: Number(formData.price), stock: Number(formData.stock), categoryId: Number(formData.categoryId) };
       if (isEditing) {
         await productApi.updateProductApi(currentId, productData, imageFile);
         toast.success(showImageModal ? '\u5716\u7247\u4E0A\u50B3\u6210\u529F' : '\u5546\u54C1\u66F4\u65B0\u6210\u529F');
@@ -194,11 +194,11 @@ const AdminProductsPage = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-stone-50 text-xs tracking-widest">
-                <th className="p-4">{"\u5716\u7247"}</th><th className="p-4">{"\u540D\u7A31"}</th><th className="p-4">{"\u5206\u985E"}</th><th className="p-4">{"\u50F9\u683C"}</th><th className="p-4">{"\u5EAB\u5B58"}</th><th className="p-4">{"\u5716\u7247\u6578"}</th><th className="p-4">{"\u64CD\u4F5C"}</th>
+                <th className="p-4">{"\u5716\u7247"}</th><th className="p-4">{"\u540D\u7A31"}</th><th className="p-4">Code</th><th className="p-4">{"\u5206\u985E"}</th><th className="p-4">{"\u50F9\u683C"}</th><th className="p-4">{"\u5EAB\u5B58"}</th><th className="p-4">{"\u5716\u7247\u6578"}</th><th className="p-4">{"\u64CD\u4F5C"}</th>
               </tr>
             </thead>
             <tbody>
-              {products.length === 0 ? (<tr><td colSpan="7" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}</td></tr>) : products.map((p, index) => (
+              {products.length === 0 ? (<tr><td colSpan="8" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}</td></tr>) : products.map((p, index) => (
                 <tr key={p.id} className="border-b hover:bg-stone-50">
                   <td className="p-4">
                     <div className="w-16 h-16 bg-slate-200 rounded overflow-hidden">
@@ -206,6 +206,7 @@ const AdminProductsPage = () => {
                     </div>
                   </td>
                   <td className="p-4 font-bold">{p.name}</td>
+                  <td className="p-4 text-sm font-mono text-slate-700">{p.productCode || '-'}</td>
                   <td className="p-4 text-sm">{p.categoryName || '\u7121'}</td>
                   <td className="p-4 font-bold text-amber-600">{"\u00A5"}{Number(p.price).toLocaleString()}</td>
                   <td className="p-4 text-sm">
@@ -242,6 +243,7 @@ const AdminProductsPage = () => {
               <div className="bg-slate-900 text-white p-4 flex justify-between"><h2 className="font-bold">{isEditing ? '\u4FEE\u6539\u5546\u54C1' : '\u65B0\u589E\u5546\u54C1'}</h2><button onClick={closeModal} className="text-2xl">{"\u2715"}</button></div>
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <input name="name" value={formData.name} onChange={handleInputChange} placeholder={"\u540D\u7A31"} required className="w-full p-2 border rounded"/>
+                <input name="productCode" value={formData.productCode} onChange={handleInputChange} placeholder={"商品 Code，例：P0001。留空則自動生成"} className="w-full p-2 border rounded font-mono uppercase"/>
                 <input name="price" value={formData.price} onChange={handleInputChange} placeholder={"\u50F9\u683C"} type="number" required className="w-full p-2 border rounded"/>
                 <input name="stock" value={formData.stock} onChange={handleInputChange} placeholder={"\u5EAB\u5B58"} type="number" required className="w-full p-2 border rounded"/>
                 <select name="categoryId" value={formData.categoryId} onChange={handleInputChange} required className="w-full p-2 border rounded">
@@ -292,6 +294,7 @@ const AdminProductsPage = () => {
           <AdminVariantsModal
             productId={currentId}
             productName={currentProduct.name}
+            productCode={currentProduct.productCode}
             onClose={closeModal}
             onChanged={fetchData}
           />

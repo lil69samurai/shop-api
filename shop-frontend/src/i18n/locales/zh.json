@@ -322,9 +322,9 @@
       "nameJaPh": "屬性名（日文）例：サイズ",
       "nameZhPh": "屬性名（中文）例：尺寸",
       "nameEnPh": "屬性名（英文）例：Size",
-      "valuesPh": "每行一個屬性值\n例：\n37\n38\n39",
-      "valuesHint": "請每行輸入一個值。",
-      "skuPh": "SKU 例：SHINAI-A-39",
+      "valuesPh": "每行一個屬性值，可用「名稱|CODE」指定代碼\\n例：\\n37|37\\n黑色|BLK\\n白色|WHT",
+      "valuesHint": "每行一個值。格式：名稱|CODE。CODE 可留空，後端會自動生成。",
+      "skuPh": "SKU 例：P0001-M-BLK。留空則後端自動生成",
       "selectValue": "請選擇",
       "priceLabel": "價格",
       "stockLabel": "庫存",
@@ -350,7 +350,13 @@
       "skuRequired": "SKU 必填",
       "priceInvalid": "請輸入正確的價格",
       "stockInvalid": "請輸入正確的庫存",
-      "allOptionsRequired": "請選擇所有屬性"
+      "allOptionsRequired": "請選擇所有屬性",
+      "skuHint": "可留空交給後端自動生成，或先選完規格值後按「自動生成」。",
+      "generateSku": "自動生成",
+      "skuGenerated": "SKU 已生成",
+      "productCodeMissing": "商品缺少 productCode，請先儲存商品 Code。",
+      "optionCodeMissing": "所選屬性值缺少 code，請先在屬性頁補上 value code。",
+      "selectAllOptionsForSku": "請先選擇所有屬性值再生成 SKU"
     }
   }
 }

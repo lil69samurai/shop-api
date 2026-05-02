@@ -334,9 +334,9 @@
       "nameJaPh": "属性名（日本語）例：サイズ",
       "nameZhPh": "屬性名（繁中）例：尺寸",
       "nameEnPh": "Option name (EN) e.g. Size",
-      "valuesPh": "属性値を1行ずつ入力\n例：\n37\n38\n39",
-      "valuesHint": "1行に1つずつ入力してください。",
-      "skuPh": "SKU 例：SHINAI-A-39",
+      "valuesPh": "属性値を1行ずつ入力。 「名前|CODE」でコード指定可\\n例：\\n37|37\\n黒|BLK\\n白|WHT",
+      "valuesHint": "1行に1つずつ入力してください。形式：名前|CODE。CODEを空にするとバックエンドで自動生成されます。",
+      "skuPh": "SKU 例：P0001-M-BLK。空欄の場合は自動生成",
       "selectValue": "選択してください",
       "priceLabel": "価格",
       "stockLabel": "在庫",
@@ -362,7 +362,13 @@
       "skuRequired": "SKUは必須です",
       "priceInvalid": "価格を正しく入力してください",
       "stockInvalid": "在庫を正しく入力してください",
-      "allOptionsRequired": "すべての属性を選択してください"
+      "allOptionsRequired": "すべての属性を選択してください",
+      "skuHint": "空欄のまま保存するとバックエンドで自動生成されます。または属性値を選択後「自動生成」を押してください。",
+      "generateSku": "自動生成",
+      "skuGenerated": "SKUを生成しました",
+      "productCodeMissing": "商品に productCode がありません。先に商品コードを保存してください。",
+      "optionCodeMissing": "選択した属性値に code がありません。先に属性値 code を設定してください。",
+      "selectAllOptionsForSku": "SKU生成前にすべての属性値を選択してください"
     }
   }
 }
