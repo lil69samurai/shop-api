@@ -9,7 +9,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "product_variants")
+@Table(
+    name = "product_variants",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_variant_product_sku", columnNames = {"product_id", "sku"})
+    }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,7 +30,8 @@ public class ProductVariant {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(nullable = false, unique = true, length = 100)
+    // SKU 在「同一商品內」唯一（不再全站唯一）
+    @Column(nullable = false, length = 100)
     private String sku;
 
     @Column(nullable = false)

@@ -129,7 +129,7 @@ public class ProductVariantService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found: " + productId));
 
-        if (variantRepository.existsBySku(request.getSku())) {
+        if (variantRepository.existsByProductIdAndSku(productId, request.getSku())) {
             throw new RuntimeException("SKU already exists: " + request.getSku());
         }
 
@@ -163,7 +163,7 @@ public class ProductVariantService {
                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found: " + variantId));
 
         // SKU 衝突檢查（允許自己保留）
-        if (!variant.getSku().equals(request.getSku()) && variantRepository.existsBySku(request.getSku())) {
+        if (!variant.getSku().equals(request.getSku()) && variantRepository.existsByProductIdAndSku(variant.getProduct().getId(), request.getSku())) {
             throw new RuntimeException("SKU already exists: " + request.getSku());
         }
 
