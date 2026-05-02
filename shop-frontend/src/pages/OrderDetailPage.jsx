@@ -66,11 +66,17 @@ const OrderDetailPage = () => {
           <div className="space-y-3">
             {order.items?.map((item, index) => (
               <div key={index} className="flex justify-between items-center bg-stone-50 border border-stone-100 rounded-lg p-4">
-                <div>
+                <div className="flex-1 min-w-0 mr-3">
                   <p className="font-medium text-slate-800">{item.productName}</p>
-                  <p className="text-sm text-stone-500">{item.quantity} × ¥{item.priceAtPurchase || item.price}</p>
+                  {item.variantName && (
+                    <p className="text-xs text-slate-500 mt-0.5">{item.variantName}</p>
+                  )}
+                  {item.sku && (
+                    <p className="text-xs text-slate-400 font-mono mt-0.5">SKU: {item.sku}</p>
+                  )}
+                  <p className="text-sm text-stone-500 mt-0.5">{item.quantity} × ¥{item.priceAtPurchase || item.price}</p>
                 </div>
-                <p className="font-bold text-slate-800">¥{item.subtotal}</p>
+                <p className="font-bold text-slate-800 flex-shrink-0">¥{item.subtotal}</p>
               </div>))}
           </div>
 

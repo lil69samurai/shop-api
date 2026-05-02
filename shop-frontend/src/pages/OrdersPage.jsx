@@ -75,7 +75,7 @@ const OrdersPage = () => {
                     {order.recipientName && <span>→ {order.recipientName}</span>}</div>
                   {order.items && order.items.length > 0 && (
                     <p className="text-xs text-stone-400 mt-2">
-                      {order.items.slice(0, 3).map(i => i.productName).join(", ")}
+                      {order.items.slice(0, 3).map(i => i.variantName ? (i.productName + " (" + i.variantName + ")") : i.productName).join(", ")}
                       {order.items.length > 3 ? (" " + t("orders.other") + (order.items.length - 3) + t("orders.items")) : ""}</p>)}
                 </Link>
                 <div className="text-right ml-4 flex-shrink-0">

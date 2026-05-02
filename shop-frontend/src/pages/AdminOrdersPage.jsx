@@ -540,11 +540,17 @@ const AdminOrdersPage = () => {
                       {selectedOrder.items && selectedOrder.items.length > 0 ? (
                         selectedOrder.items.map((item, idx) => (
                           <div key={idx} className="flex items-center justify-between p-3 bg-stone-50 border border-slate-100 rounded-lg">
-                            <div className="flex-1">
-                              <h4 className="font-bold text-slate-900">{item.productName || '未知商品'}</h4>
+                            <div className="flex-1 min-w-0 mr-3">
+                              <h4 className="font-bold text-slate-900 truncate">{item.productName || '未知商品'}</h4>
+                              {item.variantName && (
+                                <p className="text-xs text-slate-600 mt-0.5">{item.variantName}</p>
+                              )}
+                              {item.sku && (
+                                <p className="text-xs text-slate-400 font-mono mt-0.5">SKU: {item.sku}</p>
+                              )}
                               <p className="text-xs text-slate-500 mt-1">單價: ¥{Number(item.priceAtPurchase).toLocaleString()}</p>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right flex-shrink-0">
                               <p className="text-sm font-bold bg-amber-100 text-amber-800 px-2 py-1 inline-block mb-1 rounded">
                                 數量: {item.quantity} 件
                               </p>

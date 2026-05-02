@@ -109,11 +109,17 @@ const OrderSuccessPage = () => {
               <div className="space-y-2">
                 {order.items?.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center py-2 border-b border-stone-50 last:border-0">
-                    <div>
+                    <div className="flex-1 min-w-0 mr-3">
                       <p className="text-sm font-medium text-slate-800">{item.productName}</p>
-                      <p className="text-xs text-stone-400">{"\u00A5"}{item.priceAtPurchase || item.price} {"\u00D7"} {item.quantity}</p>
+                      {item.variantName && (
+                        <p className="text-xs text-slate-500 mt-0.5">{item.variantName}</p>
+                      )}
+                      {item.sku && (
+                        <p className="text-xs text-slate-400 font-mono mt-0.5">SKU: {item.sku}</p>
+                      )}
+                      <p className="text-xs text-stone-400 mt-0.5">{"\u00A5"}{item.priceAtPurchase || item.price} {"\u00D7"} {item.quantity}</p>
                     </div>
-                    <p className="font-bold text-slate-800">{"\u00A5"}{Number(item.subtotal).toLocaleString()}</p>
+                    <p className="font-bold text-slate-800 flex-shrink-0">{"\u00A5"}{Number(item.subtotal).toLocaleString()}</p>
                   </div>
                 ))}
               </div>
