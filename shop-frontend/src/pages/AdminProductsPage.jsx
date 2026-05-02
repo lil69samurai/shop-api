@@ -14,10 +14,20 @@ const getArray = (res) => {
   return [];
 };
 
+const PAGE_SIZE = 20;
+
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // search + pagination
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [searchInput, setSearchInput] = useState("");
+  const [keyword, setKeyword] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -35,18 +45,68 @@ const AdminProductsPage = () => {
   const [showVariantsModal, setShowVariantsModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', productCode: '', description: '', price: '', stock: '', categoryId: '' });
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => { fetchProducts(); /* eslint-disable-next-line */ }, [page, keyword, categoryFilter]);
 
-  const fetchData = async () => {
+  const fetchCategories = async () => {
     try {
-      setLoading(true);
-      const prodRes = await productApi.getProductsApi(0, 100);
-      setProducts(getArray(prodRes));
       const catRes = await categoryApi.getCategoriesApi();
       setCategories(getArray(catRes));
-    } catch (error) { toast.error('\u8CC7\u6599\u8F09\u5165\u5931\u6557'); }
-    finally { setLoading(false); }
+    } catch (e) { /* silent */ }
   };
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const prodRes = await productApi.getProductsApi(page, PAGE_SIZE, keyword, categoryFilter);
+      setProducts(getArray(prodRes));
+
+      const tp = prodRes?.data?.totalPages ?? prodRes?.totalPages ?? 0;
+      const te = prodRes?.data?.totalElements ?? prodRes?.totalElements ?? 0;
+      setTotalPages(tp);
+      setTotalElements(te);
+    } catch (error) {
+      toast.error('\u8CC7\u6599\u8F09\u5165\u5931\u6557');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 給既有 callback 用，保持向後相容
+  const fetchData = () => { fetchProducts(); };
+
+  const handleSearch = () => {
+    const next = searchInput.trim();
+    if (next === keyword) {
+      // 一樣的關鍵字，但仍重新拉一次
+      fetchProducts();
+    } else {
+      setKeyword(next);
+      setPage(0);
+    }
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+
+  const handleCategoryChangeFilter = (e) => {
+    setCategoryFilter(e.target.value);
+    setPage(0);
+  };
+
+  const handleClearFilter = () => {
+    setSearchInput("");
+    setKeyword("");
+    setCategoryFilter("");
+    setPage(0);
+  };
+
+  const goPrev = () => { if (page > 0) setPage(page - 1); };
+  const goNext = () => { if (page < totalPages - 1) setPage(page + 1); };
 
   const handleInputChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
@@ -136,7 +196,6 @@ const AdminProductsPage = () => {
     try {
       await productApi.deleteProductImageApi(imageId);
       toast.success('\u5716\u7247\u5DF2\u522A\u9664');
-      // Refresh product data
       const res = await productApi.getProductByIdApi(currentId);
       const updated = res.data || res;
       setCurrentProduct(updated);
@@ -177,7 +236,13 @@ const AdminProductsPage = () => {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div></div>;
+  if (loading && products.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 py-12 px-4 font-sans">
@@ -190,6 +255,50 @@ const AdminProductsPage = () => {
           <button onClick={openAddModal} className="bg-slate-900 text-stone-50 px-6 py-2 font-bold hover:bg-amber-600">{"\u65B0\u589E\u5546\u54C1"}</button>
         </div>
 
+        {/* Search + Filter Bar */}
+        <div className="bg-white border border-slate-200 p-4 rounded-lg mb-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+          <div className="flex-1 flex gap-2">
+            <input
+              type="text"
+              placeholder={"\uD83D\uDD0D \u641C\u5C0B\u5546\u54C1\u540D\u7A31..."}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              className="flex-1 border border-stone-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            />
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-amber-600 whitespace-nowrap"
+            >
+              {"\u641C\u5C0B"}
+            </button>
+          </div>
+
+          <select
+            value={categoryFilter}
+            onChange={handleCategoryChangeFilter}
+            className="border border-stone-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white"
+          >
+            <option value="">{"\u5168\u90E8\u5206\u985E"}</option>
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+
+          {(keyword || categoryFilter) && (
+            <button
+              onClick={handleClearFilter}
+              className="px-4 py-2 bg-stone-200 text-stone-700 text-sm font-bold rounded-lg hover:bg-stone-300 whitespace-nowrap"
+            >
+              {"\u6E05\u9664\u7BE9\u9078"}
+            </button>
+          )}
+        </div>
+
+        <p className="text-sm text-stone-400 mb-3">
+          {"\u5171 "}{totalElements}{" \u7B46\u5546\u54C1"}
+          {keyword ? " / " + "\u95DC\u9375\u5B57: " + keyword : ""}
+          {categoryFilter ? " / " + "\u5206\u985E: " + (categories.find(c => String(c.id) === String(categoryFilter))?.name || categoryFilter) : ""}
+        </p>
+
         <div className="bg-white border border-slate-200 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -198,7 +307,11 @@ const AdminProductsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {products.length === 0 ? (<tr><td colSpan="8" className="p-8 text-center text-slate-400">{"\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}</td></tr>) : products.map((p, index) => (
+              {products.length === 0 ? (
+                <tr><td colSpan="8" className="p-8 text-center text-slate-400">
+                  {keyword || categoryFilter ? "\u67E5\u7121\u7B26\u5408\u689D\u4EF6\u7684\u5546\u54C1" : "\u5C1A\u7121\u5546\u54C1\u3001\u8ACB\u65B0\u589E\u5546\u54C1"}
+                </td></tr>
+              ) : products.map((p) => (
                 <tr key={p.id} className="border-b hover:bg-stone-50">
                   <td className="p-4">
                     <div className="w-16 h-16 bg-slate-200 rounded overflow-hidden">
@@ -236,6 +349,29 @@ const AdminProductsPage = () => {
           </table>
         </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center items-center gap-3">
+            <button
+              onClick={goPrev}
+              disabled={page === 0 || loading}
+              className="px-4 py-2 bg-white border border-stone-300 text-sm font-bold rounded hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {"\u2190 \u4E0A\u4E00\u9801"}
+            </button>
+            <span className="text-sm text-slate-600 font-medium">
+              {"\u7B2C "}{page + 1}{" / "}{totalPages}{" \u9801"}
+            </span>
+            <button
+              onClick={goNext}
+              disabled={page >= totalPages - 1 || loading}
+              className="px-4 py-2 bg-white border border-stone-300 text-sm font-bold rounded hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {"\u4E0B\u4E00\u9801 \u2192"}
+            </button>
+          </div>
+        )}
+
         {/* Edit Modal */}
         {showEditModal && (
           <div className="fixed inset-0 bg-slate-900 bg-opacity-70 flex justify-center items-center z-50 p-4">
@@ -243,7 +379,7 @@ const AdminProductsPage = () => {
               <div className="bg-slate-900 text-white p-4 flex justify-between"><h2 className="font-bold">{isEditing ? '\u4FEE\u6539\u5546\u54C1' : '\u65B0\u589E\u5546\u54C1'}</h2><button onClick={closeModal} className="text-2xl">{"\u2715"}</button></div>
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <input name="name" value={formData.name} onChange={handleInputChange} placeholder={"\u540D\u7A31"} required className="w-full p-2 border rounded"/>
-                <input name="productCode" value={formData.productCode} onChange={handleInputChange} placeholder={"商品 Code，例：P0001。留空則自動生成"} className="w-full p-2 border rounded font-mono uppercase"/>
+                <input name="productCode" value={formData.productCode} onChange={handleInputChange} placeholder={"\u5546\u54C1 Code\uFF0C\u4F8B\uFF1AP0001\u3002\u7559\u7A7A\u5247\u81EA\u52D5\u751F\u6210"} className="w-full p-2 border rounded font-mono uppercase"/>
                 <input name="price" value={formData.price} onChange={handleInputChange} placeholder={"\u50F9\u683C"} type="number" required className="w-full p-2 border rounded"/>
                 <input name="stock" value={formData.stock} onChange={handleInputChange} placeholder={"\u5EAB\u5B58"} type="number" required className="w-full p-2 border rounded"/>
                 <select name="categoryId" value={formData.categoryId} onChange={handleInputChange} required className="w-full p-2 border rounded">
@@ -262,7 +398,6 @@ const AdminProductsPage = () => {
             <div className="bg-white w-full max-w-md rounded-lg overflow-hidden">
               <div className="bg-slate-900 text-white p-4 flex justify-between"><h2 className="font-bold">{"\u4E0A\u50B3\u4E3B\u5716"}</h2><button onClick={closeModal} className="text-2xl">{"\u2715"}</button></div>
               <form onSubmit={handleSubmit} className="p-6">
-                {/* Current main image preview */}
                 {currentProduct?.imageUrl && !imagePreview && (
                   <div className="mb-4">
                     <p className="text-xs text-stone-500 mb-2">{"\u76EE\u524D\u4E3B\u5716:"}</p>
@@ -271,7 +406,6 @@ const AdminProductsPage = () => {
                     </div>
                   </div>
                 )}
-                {/* New image preview */}
                 {imagePreview && (
                   <div className="mb-4">
                     <p className="text-xs text-green-600 mb-2">{"\u2713 \u65B0\u5716\u7247\u9810\u89BD:"}</p>
@@ -309,7 +443,6 @@ const AdminProductsPage = () => {
                 <button onClick={closeModal} className="text-2xl">{"\u2715"}</button>
               </div>
               <div className="p-6">
-                {/* Existing Images */}
                 <div className="mb-6">
                   <h3 className="text-sm font-bold text-slate-800 mb-3 pb-2 border-b border-slate-200">{"\uD83D\uDDBC\uFE0F \u5DF2\u4E0A\u50B3\u5716\u7247"}</h3>
                   {currentProduct?.imageUrls && currentProduct.imageUrls.length > 0 ? (
@@ -359,13 +492,11 @@ const AdminProductsPage = () => {
                   ) : (
                     <p className="text-stone-400 text-sm py-4 text-center">{"\u307E\u3060\u5716\u7247\u304C\u3042\u308A\u307E\u305B\u3093"}</p>
                   )}
-                  {/* Show main image info */}
                   {currentProduct?.imageUrl && (
                     <p className="text-xs text-stone-400 mt-3">{"\uD83D\uDCCC \u4E3B\u5716: "}{currentProduct.imageUrl.substring(currentProduct.imageUrl.lastIndexOf('/') + 1).substring(0, 30)}...</p>
                   )}
                 </div>
 
-                {/* Upload New Images */}
                 <form onSubmit={handleMultiUpload}>
                   <h3 className="text-sm font-bold text-slate-800 mb-3 pb-2 border-b border-slate-200">{"\u2795 \u65B0\u589E\u5716\u7247"}</h3>
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
@@ -373,7 +504,6 @@ const AdminProductsPage = () => {
                     <p className="text-xs text-blue-600 mt-2">{"\uD83D\uDCA1 \u53EF\u6309\u4F4F Ctrl/Cmd \u9078\u64C7\u591A\u5F35\u5716\u7247"}</p>
                   </div>
 
-                  {/* Multi file previews */}
                   {multiPreviews.length > 0 && (
                     <div className="mb-4">
                       <p className="text-xs text-green-600 mb-2">{"\u2713 \u5DF2\u9078\u64C7 "}{multiPreviews.length}{" \u5F35\u5716\u7247:"}</p>
