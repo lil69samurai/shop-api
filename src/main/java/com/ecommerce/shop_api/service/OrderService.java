@@ -33,6 +33,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final EmailService emailService;
 
     // Allowed status transitions map
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = new HashMap<>();
@@ -144,6 +145,11 @@ public class OrderService {
         }
 
         Order saved = orderRepository.save(order);
+
+        // Send order confirmation email (async, non-blocking)
+        // 注文確認メール送信（非同期）
+        emailService.sendOrderCreatedEmail(saved);
+
         return mapToResponse(saved);
     }
 
@@ -261,6 +267,15 @@ public class OrderService {
 
         order.setStatus(newStatus);
         Order updated = orderRepository.save(order);
+
+        // Send status-change notification (async, non-blocking)
+        // ステータス変更通知メール送信（非同期）
+        if (newStatus == OrderStatus.SHIPPED) {
+            emailService.sendOrderShippedEmail(updated);
+        } else if (newStatus == OrderStatus.CANCELLED) {
+            emailService.sendOrderCancelledEmail(updated);
+        }
+
         return mapToResponse(updated);
     }
 

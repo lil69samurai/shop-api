@@ -115,6 +115,11 @@
 			<scope>test</scope>
 		</dependency>
 	
+        <!-- Email | メール送信 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- Google OAuth2 Token Verification -->
         <dependency>
             <groupId>com.google.api-client</groupId>
