@@ -4,33 +4,37 @@ import com.ecommerce.shop_api.entity.Order;
 import com.ecommerce.shop_api.entity.OrderItem;
 import com.ecommerce.shop_api.entity.User;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Email notification service for order events.
- * 注文関連のメール通知サービス。
+ * Email notification service using Resend HTTP API.
+ * Render free tier blocks SMTP ports (25/465/587),
+ * so we send via HTTPS instead.
  *
- * All methods are async and non-blocking — failures will be logged
- * but will not interrupt the order flow.
+ * 注文関連のメール通知サービス（Resend HTTP API 使用）。
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final RestClient restClient;
 
-    @Value("${spring.mail.username:}")
-    private String mailUsername;
+    @Value("${resend.api-key:}")
+    private String apiKey;
+
+    @Value("${resend.from:onboarding@resend.dev}")
+    private String fromEmail;
 
     @Value("${app.mail.from-name:剣道ショップ}")
     private String fromName;
@@ -44,14 +48,22 @@ public class EmailService {
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private static final String RESEND_ENDPOINT = "https://api.resend.com/emails";
+
+    public EmailService() {
+        this.restClient = RestClient.builder()
+                .baseUrl(RESEND_ENDPOINT)
+                .build();
+    }
+
     @PostConstruct
     public void init() {
         if (!mailEnabled) {
             log.warn("⚠️  EmailService: mail sending is DISABLED (app.mail.enabled=false)");
-        } else if (mailUsername == null || mailUsername.isBlank()) {
-            log.warn("⚠️  EmailService: MAIL_USERNAME not configured — emails will fail!");
+        } else if (apiKey == null || apiKey.isBlank()) {
+            log.warn("⚠️  EmailService: RESEND_API_KEY not configured — emails will fail!");
         } else {
-            log.info("✉️  EmailService: ready (from={}, sender={})", fromName, mailUsername);
+            log.info("✉️  EmailService: ready (provider=Resend, from={} <{}>)", fromName, fromEmail);
         }
     }
 
@@ -62,7 +74,6 @@ public class EmailService {
     @Async("emailExecutor")
     public void sendOrderCreatedEmail(Order order) {
         if (!shouldSend(order)) return;
-
         String subject = String.format("【剣道ショップ】ご注文ありがとうございます (注文番号: #%d)", order.getId());
         String body = buildOrderCreatedBody(order);
         send(order.getUser().getEmail(), subject, body, "ORDER_CREATED", order.getId());
@@ -71,7 +82,6 @@ public class EmailService {
     @Async("emailExecutor")
     public void sendOrderShippedEmail(Order order) {
         if (!shouldSend(order)) return;
-
         String subject = String.format("【剣道ショップ】ご注文を発送しました (注文番号: #%d)", order.getId());
         String body = buildOrderShippedBody(order);
         send(order.getUser().getEmail(), subject, body, "ORDER_SHIPPED", order.getId());
@@ -80,7 +90,6 @@ public class EmailService {
     @Async("emailExecutor")
     public void sendOrderCancelledEmail(Order order) {
         if (!shouldSend(order)) return;
-
         String subject = String.format("【剣道ショップ】ご注文がキャンセルされました (注文番号: #%d)", order.getId());
         String body = buildOrderCancelledBody(order);
         send(order.getUser().getEmail(), subject, body, "ORDER_CANCELLED", order.getId());
@@ -214,6 +223,10 @@ public class EmailService {
             log.info("📭 mail disabled — skip sending for order #{}", order.getId());
             return false;
         }
+        if (apiKey == null || apiKey.isBlank()) {
+            log.warn("📭 RESEND_API_KEY missing — skip sending for order #{}", order.getId());
+            return false;
+        }
         if (order == null || order.getUser() == null) {
             log.warn("📭 order or user is null — skip sending");
             return false;
@@ -228,15 +241,24 @@ public class EmailService {
 
     private void send(String to, String subject, String body, String type, Long orderId) {
         try {
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setFrom(mailUsername);
-            msg.setTo(to);
-            msg.setSubject(subject);
-            msg.setText(body);
-            mailSender.send(msg);
-            log.info("✉️  sent [{}] order #{} → {}", type, orderId, to);
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("from", String.format("%s <%s>", fromName, fromEmail));
+            payload.put("to", new String[]{to});
+            payload.put("subject", subject);
+            payload.put("text", body);
+
+            String response = restClient.post()
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(payload)
+                    .retrieve()
+                    .body(String.class);
+
+            log.info("✉️  sent [{}] order #{} → {} (resend response: {})",
+                    type, orderId, to, response);
         } catch (Exception e) {
-            log.error("❌ failed to send [{}] order #{} → {}: {}", type, orderId, to, e.getMessage());
+            log.error("❌ failed to send [{}] order #{} → {}: {}",
+                    type, orderId, to, e.getMessage());
         }
     }
 
