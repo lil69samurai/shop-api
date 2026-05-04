@@ -156,6 +156,11 @@ public class AuthController {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .defaultRecipientName(user.getDefaultRecipientName())
+                .defaultPhone(user.getDefaultPhone())
+                .defaultZipCode(user.getDefaultZipCode())
+                .defaultAddress(user.getDefaultAddress())
+                .defaultNote(user.getDefaultNote())
                 .build();
         return ResponseEntity.ok(ApiResponse.success("OK", response));
     }

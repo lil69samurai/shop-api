@@ -40,6 +40,21 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "default_recipient_name")
+    private String defaultRecipientName;
+
+    @Column(name = "default_phone")
+    private String defaultPhone;
+
+    @Column(name = "default_zip_code")
+    private String defaultZipCode;
+
+    @Column(name = "default_address")
+    private String defaultAddress;
+
+    @Column(name = "default_note")
+    private String defaultNote;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
