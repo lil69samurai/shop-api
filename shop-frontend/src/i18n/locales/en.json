@@ -179,7 +179,8 @@
     "noteLabel": "Note",
     "orderDate": "Order Date",
     "orderNum": "Order",
-    "backToOrders": "Back to orders"
+    "backToOrders": "Back to orders",
+    "prefilledFromProfile": "Auto-filled from your profile"
   },
   "orderSuccess": {
     "title": "Thank You for Your Order",
@@ -280,7 +281,15 @@
     "user": "Member",
     "totalSpentLabel": "Total Spent",
     "noOrdersYet": "No orders yet",
-    "confirmPwLabel": "Confirm New Password"
+    "confirmPwLabel": "Confirm New Password",
+    "defaultRecipient": "Default Recipient",
+    "recipientHint": "Set a default recipient to auto-fill at checkout.",
+    "add": "Add",
+    "edit": "Edit",
+    "saving": "Saving...",
+    "saveRecipient": "Save Recipient",
+    "recipientSaved": "Default recipient saved",
+    "recipientFailed": "Failed to save"
   },
   "status": {
     "PENDING": "Pending",

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../hooks/useAuth";
 import { createOrderApi } from "../api/orderApi";
 import { toast } from "react-toastify";
 
@@ -9,6 +10,8 @@ const CreateOrderPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
+  const [prefilled, setPrefilled] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1);
@@ -22,6 +25,25 @@ const CreateOrderPage = () => {
 
   const [form, setForm] = useState({ recipientName: "", phone: "", zipCode: "", address: "", paymentMethod: "", note: "" });
   const [formErrors, setFormErrors] = useState({});
+
+  // 自動預填使用者預設收件資訊（只在第一次有 user 時填，後續不覆蓋使用者的修改）
+  useEffect(() => {
+    if (user && !prefilled) {
+      const hasDefault = user.defaultRecipientName || user.defaultPhone || user.defaultZipCode || user.defaultAddress;
+      if (hasDefault) {
+        setForm((prev) => ({
+          ...prev,
+          recipientName: prev.recipientName || user.defaultRecipientName || "",
+          phone:         prev.phone         || user.defaultPhone || "",
+          zipCode:       prev.zipCode       || user.defaultZipCode || "",
+          address:       prev.address       || user.defaultAddress || "",
+          note:          prev.note          || user.defaultNote || "",
+        }));
+        toast.info(t("order.prefilledFromProfile"), { autoClose: 2500 });
+      }
+      setPrefilled(true);
+    }
+  }, [user, prefilled, t]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

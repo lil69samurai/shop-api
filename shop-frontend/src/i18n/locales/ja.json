@@ -191,7 +191,8 @@
     "noteLabel": "備考",
     "orderDate": "注文日",
     "orderNum": "注文",
-    "backToOrders": "注文履歴に戻る"
+    "backToOrders": "注文履歴に戻る",
+    "prefilledFromProfile": "プロフィールから配送先を自動入力しました"
   },
   "orderSuccess": {
     "title": "ご注文ありがとうございます",
@@ -292,7 +293,15 @@
     "user": "一般ユーザー",
     "totalSpentLabel": "累計購入額",
     "noOrdersYet": "まだ注文がありません",
-    "confirmPwLabel": "新しいパスワード（確認）"
+    "confirmPwLabel": "新しいパスワード（確認）",
+    "defaultRecipient": "デフォルト配送先",
+    "recipientHint": "デフォルトの配送先を設定すると、注文時に自動入力されます。",
+    "add": "追加",
+    "edit": "編集",
+    "saving": "保存中...",
+    "saveRecipient": "配送先を保存",
+    "recipientSaved": "デフォルト配送先を保存しました",
+    "recipientFailed": "保存に失敗しました"
   },
   "status": {
     "PENDING": "保留中",

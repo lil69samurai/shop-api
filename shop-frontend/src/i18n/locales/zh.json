@@ -179,7 +179,8 @@
     "noteLabel": "備註",
     "orderDate": "訂單日期",
     "orderNum": "訂單",
-    "backToOrders": "回到訂單紀錄"
+    "backToOrders": "回到訂單紀錄",
+    "prefilledFromProfile": "已自動帶入預設收件資訊"
   },
   "orderSuccess": {
     "title": "感謝您的訂購",
@@ -280,7 +281,15 @@
     "user": "一般會員",
     "totalSpentLabel": "累計消費",
     "noOrdersYet": "尚無訂單",
-    "confirmPwLabel": "確認新密碼"
+    "confirmPwLabel": "確認新密碼",
+    "defaultRecipient": "預設收件資訊",
+    "recipientHint": "設定預設收件資訊後，下單時會自動帶入。",
+    "add": "新增",
+    "edit": "編輯",
+    "saving": "儲存中...",
+    "saveRecipient": "儲存收件資訊",
+    "recipientSaved": "預設收件資訊已儲存",
+    "recipientFailed": "儲存失敗"
   },
   "status": {
     "PENDING": "處理中",

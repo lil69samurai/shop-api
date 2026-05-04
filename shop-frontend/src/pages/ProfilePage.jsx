@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { changePasswordApi } from "../api/authApi";
 import { getMyOrdersApi } from "../api/orderApi";
+import { getMyDefaultRecipientApi, updateMyDefaultRecipientApi } from "../api/userApi";
 import { toast } from "react-toastify";
 
 const ProfilePage = () => {
@@ -14,6 +15,17 @@ const ProfilePage = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  // 預設收件資訊
+  const [recipient, setRecipient] = useState({
+    defaultRecipientName: "",
+    defaultPhone: "",
+    defaultZipCode: "",
+    defaultAddress: "",
+    defaultNote: "",
+  });
+  const [showRecipientForm, setShowRecipientForm] = useState(false);
+  const [recipientSaving, setRecipientSaving] = useState(false);
 
   const statusStyles = {
     PENDING: "bg-amber-100 text-amber-700", PAID: "bg-green-100 text-green-700",
@@ -32,10 +44,43 @@ const ProfilePage = () => {
         setOrderStats({ total: orders.length, totalSpent });
       } catch (error) { console.error("Failed to fetch orders", error); }
     };
-    if (user) fetchOrders();
+    const fetchRecipient = async () => {
+      try {
+        const res = await getMyDefaultRecipientApi();
+        const d = res.data || {};
+        setRecipient({
+          defaultRecipientName: d.defaultRecipientName || "",
+          defaultPhone:         d.defaultPhone || "",
+          defaultZipCode:       d.defaultZipCode || "",
+          defaultAddress:       d.defaultAddress || "",
+          defaultNote:          d.defaultNote || "",
+        });
+      } catch (error) { console.error("Failed to fetch recipient", error); }
+    };
+    if (user) { fetchOrders(); fetchRecipient(); }
   }, [user]);
 
   const handleChange = (e) => { setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value }); };
+
+  const handleRecipientChange = (e) => {
+    setRecipient({ ...recipient, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveRecipient = async (e) => {
+    e.preventDefault();
+    setRecipientSaving(true);
+    try {
+      await updateMyDefaultRecipientApi(recipient);
+      toast.success(t("profile.recipientSaved"));
+      setShowRecipientForm(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || t("profile.recipientFailed"));
+    } finally {
+      setRecipientSaving(false);
+    }
+  };
+
+  const hasRecipient = !!(recipient.defaultRecipientName || recipient.defaultAddress);
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -112,6 +157,61 @@ const ProfilePage = () => {
           <Link to="/cart" className="bg-white rounded-xl shadow-sm border border-stone-100 p-5 text-center hover:shadow-md transition group">
             <div className="text-2xl mb-2">🛒</div>
             <p className="font-bold text-slate-800 group-hover:text-amber-600 transition">{t("nav.cart")}</p></Link>
+        </div>
+
+        {/* 預設收件資訊 */}
+        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6 mb-6">
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-stone-100">
+            <h2 className="text-lg font-bold text-slate-800">📮 {t("profile.defaultRecipient")}</h2>
+            <button onClick={() => setShowRecipientForm(!showRecipientForm)} className="text-sm text-amber-600 hover:text-amber-700 font-medium">
+              {showRecipientForm ? t("profile.close") : (hasRecipient ? t("profile.edit") : t("profile.add"))}
+            </button>
+          </div>
+
+          {showRecipientForm ? (
+            <form onSubmit={handleSaveRecipient} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-stone-500 mb-1">{t("order.name")}</label>
+                <input type="text" name="defaultRecipientName" value={recipient.defaultRecipientName} onChange={handleRecipientChange}
+                  className="w-full border border-stone-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-stone-500 mb-1">{t("order.phone")}</label>
+                  <input type="tel" name="defaultPhone" value={recipient.defaultPhone} onChange={handleRecipientChange} placeholder="090-1234-5678"
+                    className="w-full border border-stone-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-stone-500 mb-1">{t("order.zipCode")}</label>
+                  <input type="text" name="defaultZipCode" value={recipient.defaultZipCode} onChange={handleRecipientChange} placeholder="123-4567"
+                    className="w-full border border-stone-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-500 mb-1">{t("order.address")}</label>
+                <input type="text" name="defaultAddress" value={recipient.defaultAddress} onChange={handleRecipientChange}
+                  className="w-full border border-stone-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-500 mb-1">{t("order.note")}</label>
+                <textarea name="defaultNote" value={recipient.defaultNote} onChange={handleRecipientChange} rows={2}
+                  className="w-full border border-stone-200 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none" />
+              </div>
+              <button type="submit" disabled={recipientSaving} className="w-full bg-slate-800 text-white py-3 rounded-lg font-bold hover:bg-slate-700 disabled:bg-stone-300 transition">
+                {recipientSaving ? t("profile.saving") : t("profile.saveRecipient")}
+              </button>
+            </form>
+          ) : hasRecipient ? (
+            <div className="bg-stone-50 rounded-lg p-4 space-y-1 text-sm">
+              {recipient.defaultRecipientName && <p><span className="text-stone-500">{t("order.nameLabel")}:</span> <span className="font-medium text-slate-800">{recipient.defaultRecipientName}</span></p>}
+              {recipient.defaultPhone && <p><span className="text-stone-500">{t("order.phoneLabel")}:</span> <span className="font-medium text-slate-800">{recipient.defaultPhone}</span></p>}
+              {recipient.defaultZipCode && <p><span className="text-stone-500">{t("order.zipLabel")}:</span> <span className="font-medium text-slate-800">{recipient.defaultZipCode}</span></p>}
+              {recipient.defaultAddress && <p><span className="text-stone-500">{t("order.addressLabel")}:</span> <span className="font-medium text-slate-800 break-all">{recipient.defaultAddress}</span></p>}
+              {recipient.defaultNote && <p><span className="text-stone-500">{t("order.noteLabel")}:</span> <span className="font-medium text-slate-800">{recipient.defaultNote}</span></p>}
+            </div>
+          ) : (
+            <p className="text-sm text-stone-400">{t("profile.recipientHint")}</p>
+          )}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
